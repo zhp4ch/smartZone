@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.smart.topic.mapper.TopicReplyMapper">
+	<resultMap id="topicReplyModel" type="com.mass.biz.smart.topic.model.TopicReply">
+		<result property="rid" column="rid" jdbcType="BIGINT" />
+		<result property="topicId" column="topic_id" jdbcType="BIGINT" />
+		<result property="replyId" column="reply_id" jdbcType="BIGINT" />
+		<result property="reply" column="reply" jdbcType="TINYINT" />
+		<result property="openId" column="open_id" jdbcType="VARCHAR" />
+		<result property="createTime" column="create_time" jdbcType="VARCHAR" />
+		<result property="isDelete" column="is_delete" jdbcType="TINYINT" />
+		<result property="ridRe" column="rid_re" jdbcType="BIGINT" />
+		<result property="replyRe" column="reply_re" jdbcType="VARCHAR" />
+		<result property="isDeleteRe" column="is_delete_re" jdbcType="TINYINT" />
+		<result property="createTimeRe" column="createTime_re"
+			jdbcType="VARCHAR" />
+		<result property="nickName" column="nickname" jdbcType="VARCHAR" />
+		<result property="headImage" column="head_image" jdbcType="VARCHAR" />
+		<result property="nicknameRe" column="nickname_re" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="baseSql">
+		T1.rid, T1.topic_id, T1.open_id,
+		T1.reply_id,T1.create_time,
+		T1.is_delete, T1.reply
+	</sql>
+
+	<!-- 标题 关键字 发布时间范围查询 -->
+	<select id="selectPageList" resultMap="topicReplyModel">
+		SELECT
+		<include refid="baseSql" />
+		,
+		c.nickname,
+		c.head_image,
+		b.rid rid_re,
+		b.reply reply_re,
+		b.is_delete
+		is_delete_re,
+		b.create_time createTime_re,
+		d.nickname nickname_re
+		FROM
+		sz_topic_reply T1
+		LEFT JOIN sz_topic_reply b ON T1.rid = b.reply_id
+		LEFT JOIN sz_user c ON T1.open_id = c.open_id
+		LEFT JOIN sz_user d ON
+		b.open_id = d.open_id
+
+		WHERE
+		T1.topic_id = #{topicId,jdbcType=BIGINT}
+		AND
+		T1.is_delete = 0
+		<if test="searchParams !=null ">
+			<if test="searchParams.nickname !=null and searchParams.nickname !=''">
+				AND c.nickname LIKE CONCAT("%", #{searchParams.nickname,
+				jdbcType=VARCHAR},
+				"%")
+			</if>
+			<if test="searchParams.reply !=null and searchParams.reply !=''">
+				AND T1.reply LIKE CONCAT("%", #{searchParams.reply,
+				jdbcType=VARCHAR}, "%")
+			</if>
+			<if test="searchParams.replyRe !=null and searchParams.replyRe !=''">
+				AND b.reply_re LIKE CONCAT("%",
+				#{searchParams.replyRe,
+				jdbcType=VARCHAR}, "%")
+			</if>
+		</if>
+		LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+	</select>
+
+	<select id="count" resultType="java.lang.Long"
+		parameterType="com.mass.biz.smart.topic.model.TopicModel">
+		SELECT COUNT(0)
+		FROM
+		sz_topic_reply T1
+		LEFT JOIN sz_topic_reply b ON
+		T1.rid = b.reply_id
+		LEFT JOIN sz_user c ON T1.open_id = c.open_id
+		LEFT
+		JOIN sz_user d ON b.open_id = d.open_id
+
+		WHERE
+		T1.topic_id =
+		#{topicId,jdbcType=BIGINT}
+		AND T1.is_delete = 0
+		<if test="searchParams.nickname !=null and searchParams.nickname !=''">
+			AND c.nickname LIKE CONCAT("%", #{searchParams.nickname,
+			jdbcType=VARCHAR},
+			"%")
+		</if>
+		<if test="searchParams.reply !=null and searchParams.reply !=''">
+			AND T1.reply LIKE CONCAT("%", #{searchParams.reply,
+			jdbcType=VARCHAR}, "%")
+		</if>
+		<if test="searchParams.replyRe !=null and searchParams.replyRe !=''">
+			AND b.reply_re LIKE CONCAT("%",
+			#{searchParams.replyRe,
+			jdbcType=VARCHAR}, "%")
+		</if>
+	</select>
+
+	<update id="delete" parameterType="java.lang.Long">
+		UPDATE sz_topic_reply
+		SET
+		is_delete = 1
+		WHERE rid = #{rid,jdbcType=BIGINT}
+	</update>
+
+	<!--根据rid查询 -->
+	<select id="replyCount" resultMap="topicReplyModel">
+		SELECT
+		count(0)
+		 from sz_topic_reply T1
+		where T1.is_delete=0
+		and T1.topic_id=#{topicId,jdbcType=BIGINT}
+	</select>
+
+</mapper>

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.smart.property.suggestion.dao.SuggestMapper">
+    <resultMap id="suggest" type="com.mass.biz.smart.property.suggestion.model.Suggest">
+        <result property="id" column="ID" jdbcType="BIGINT"/>
+        <result property="userId" column="USER_ID" jdbcType="BIGINT"/>
+        <result property="name" column="NAME" jdbcType="VARCHAR"/>
+        <result property="building" column="BUILDING" jdbcType="VARCHAR"/>
+        <result property="mobilePhone" column="MOBILE_PHONE" jdbcType="VARCHAR"/>
+        <result property="suggestTime" column="SUGGEST_TIME" jdbcType="VARCHAR"/>
+        <result property="suggestDepartment" column="SUGGEST_DEPARTMENT" jdbcType="VARCHAR"/>
+        <result property="suggestContent" column="SUGGEST_CONTENT" jdbcType="VARCHAR"/>
+        <result property="suggestCategory" column="SUGGEST_CATEGORY" jdbcType="TINYINT"/>
+        <result property="handler" column="HANDLER" jdbcType="VARCHAR"/>
+        <result property="handlerId" column="HANDLER_ID" jdbcType="BIGINT"/>
+        <result property="showOrHidden" column="SHOW_OR_HIDDEN" jdbcType="INTEGER"/>
+        <result property="state" column="STATE" jdbcType="TINYINT"/>
+        <result property="endDate" column="END_DATE" jdbcType="TIMESTAMP"/>
+        <result property="delFlag" column="DEL_FLAG" jdbcType="VARCHAR"/>
+        <result property="count" column="COUNT" jdbcType="INTEGER"/>
+        <result property="year" column="YEAR" jdbcType="VARCHAR"/>
+        <result property="month" column="MONTH" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="baseSql">
+        
+    </sql>
+
+    
+    <select id="selectPageList" resultMap="suggest">
+        SELECT
+          *
+          FROM  sz_suggest 
+        WHERE DEL_FLAG=0 
+        <if test="suggest !=null ">
+       		<if test="suggest.name !=null and suggest.name !=''">
+                AND NAME LIKE CONCAT("%", #{suggest.name, jdbcType=VARCHAR}, "%")
+            </if> 
+            <if test="suggest.showOrHidden!=null">
+                AND SHOW_OR_HIDDEN = #{suggest.showOrHidden, jdbcType=TINYINT}
+            </if>
+            <if test="suggest.state !=null  ">
+                AND STATE = #{suggest.state, jdbcType=TINYINT}
+            </if>
+            <if test="suggest.suggestDepartment !=null and suggest.suggestDepartment !=''">
+           		AND SUGGEST_DEPARTMENT LIKE CONCAT("%", #{suggest.suggestDepartment, jdbcType=VARCHAR}, "%")
+            </if>
+            <if test="suggest.suggestTimeBefore !=null and suggest.suggestTimeBefore !='' ">
+            	AND <![CDATA[DATE_FORMAT(SUGGEST_TIME,'%Y-%m-%d') >=  DATE_FORMAT(#{suggest.suggestTimeBefore},'%Y-%m-%d')]]>
+            </if>
+            <if test="suggest.suggestTimeAfter !=null and suggest.suggestTimeAfter!='' ">
+            	AND <![CDATA[DATE_FORMAT(SUGGEST_TIME,'%Y-%m-%d') <=  DATE_FORMAT(#{suggest.suggestTimeAfter},'%Y-%m-%d')]]>
+            </if>
+        </if>
+        ORDER BY ID
+        LIMIT #{pageIndex},#{pageSize}
+    </select>
+    
+    <select id="count" resultType="java.lang.Long" parameterType="com.mass.biz.smart.property.suggestion.model.Suggest">
+        SELECT COUNT(0)
+        FROM sz_suggest
+        WHERE DEL_FLAG = 0
+        	<if test="name !=null and name !=''">
+                AND NAME LIKE CONCAT("%", #{name, jdbcType=VARCHAR}, "%")
+            </if> 
+            <if test="showOrHidden!=null">
+                AND SHOW_OR_HIDDEN = #{showOrHidden, jdbcType=TINYINT}
+            </if>
+            <if test="state !=null  ">
+                AND STATE = #{state, jdbcType=TINYINT}
+            </if>
+            <if test="suggestDepartment !=null and suggestDepartment !=''">
+           		AND SUGGEST_DEPARTMENT LIKE CONCAT("%", #{suggestDepartment, jdbcType=VARCHAR}, "%")
+            </if>
+            <if test="suggestTimeBefore != null and suggestTimeBefore !='' ">
+            	AND <![CDATA[SUGGEST_TIME >= #{suggestTimeBefore}]]>
+        	</if>
+	        <if test="suggestTimeAfter != null and suggestTimeAfter != '' ">
+	            AND <![CDATA[SUGGEST_TIME <= #{suggestTimeAfter}]]>
+	        </if>
+    </select>
+ 
+    <select id="getSuggestById" resultMap="suggest">
+        SELECT
+        	*
+        FROM sz_suggest 
+       
+        WHERE DEL_FLAG = 0 AND ID = #{id,jdbcType=BIGINT}
+    </select>
+    
+    <insert  id="addSuggest" useGeneratedKeys="true" keyProperty="id" parameterType="com.mass.biz.smart.property.suggestion.model.Suggest">
+        INSERT INTO	sz_suggest
+         (
+         	USER_ID,NAME,BUILDING,MOBILE_PHONE,SUGGEST_TIME,SUGGEST_DEPARTMENT,SUGGEST_CONTENT,HANDLER,HANDLER_ID,
+         	SHOW_OR_HIDDEN,STATE,END_DATE,DEL_FLAG
+	        )
+     	VALUES (
+	        #{userId,jdbcType=BIGINT},
+	        #{name,jdbcType=VARCHAR},
+	        #{building,jdbcType=VARCHAR},
+	        #{mobilePhone,jdbcType=VARCHAR},
+	        NOW(),
+	        #{suggestDepartment,jdbcType=VARCHAR},
+	        #{suggestContent,jdbcType=VARCHAR},
+	        #{suggestCategory,jdbcType=TINYINT},
+	        #{handler,jdbcType=VARCHAR},
+	        #{handlerId,jdbcType=BIGINT},
+	        0,
+	        0,
+	        #{endDate,jdbcType=TIMESTAMP},
+	        0
+	        );
+    </insert>
+
+    <update id="editSuggest" parameterType="com.mass.biz.smart.property.suggestion.model.Suggest">
+        UPDATE sz_suggest    
+        <set>
+        	<if test="userId !=null ">USER_ID=#{userId,jdbcType=BIGINT},</if>
+     	    <if test="name !=null and name !=''">NAME=#{name,jdbcType=VARCHAR},</if>
+            <if test="building !=null and building !=''">BUILDING=#{building,jdbcType=VARCHAR},</if>
+            <if test="mobilePhone !=null and mobilePhone !=''">MOBILE_PHONE=#{mobilePhone,jdbcType=VARCHAR},</if>
+            <if test="suggestTime !=null ">SUGGEST_TIME=#{suggestTime,jdbcType=VARCHAR},</if>
+            <if test="suggestDepartment !=null and suggestDepartment !=''">SUGGEST_DEPARTMENT=#{suggestDepartment,jdbcType=VARCHAR},</if>
+            <if test="suggestContent !=null and suggestContent !=''">SUGGEST_CONTENT=#{suggestContent,jdbcType=VARCHAR},</if>
+            <if test="suggestCategory !=null ">SUGGEST_CATEGORY =#{suggestCategory,jdbcType=TINYINT},</if>
+            <if test="handler !=null and handler !='' ">HANDLER=#{handler,jdbcType=BIGINT},</if>
+            <if test="handlerId !=null  ">HANDLER_ID=#{handlerId,jdbcType=BIGINT},</if>
+            <if test="showOrHidden !=null ">SHOW_OR_HIDDEN = #{showOrHidden,jdbcType=TINYINT},</if>
+            <if test="state !=null ">STATE =#{state,jdbcType=TINYINT},</if>
+            END_DATE=NOW(),        
+        </set>
+        WHERE ID=#{id,jdbcType=BIGINT}
+    </update>
+    
+    <update id="delSuggest" parameterType="java.lang.Long">
+        UPDATE sz_suggest
+        SET DEL_FLAG = 1
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+
+	<select id="selectSuggest" resultMap="suggest">
+		SELECT
+			*
+		FROM
+			sz_suggest 
+		WHERE
+			DEL_FLAG = 0
+		AND <![CDATA[SHOW_OR_HIDDEN <> 2]]>
+		AND STATE = 4
+		ORDER BY ID
+	</select>
+	
+	<select id="selectCountByYear" resultMap= "suggest">
+		SELECT
+			DATE_FORMAT(SUGGEST_TIME, '%m') AS MONTH,
+			count(1) AS COUNT
+		FROM
+			sz_suggest
+		WHERE
+			DATE_FORMAT(SUGGEST_TIME, '%Y') = #{year}
+		AND DEL_FLAG = 0
+		GROUP BY
+			MONTH
+		ORDER BY
+			MONTH
+	</select>
+	
+	<select id="selectContBySuggestCategory" resultMap= "suggest">
+		SELECT
+			SUGGEST_CATEGORY,
+			COUNT(1)   as count
+		FROM
+			sz_suggest
+		WHERE
+			DEL_FLAG = 0
+		AND
+			DATE_FORMAT(SUGGEST_TIME, '%Y') = #{year}
+		GROUP BY
+			SUGGEST_CATEGORY
+	</select>
+</mapper>

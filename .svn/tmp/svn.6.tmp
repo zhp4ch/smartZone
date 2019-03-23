@@ -1,0 +1,59 @@
+logging:
+  file: logs/mass.log
+  level:
+    org.springframework: info
+    com.mass: DEBUG
+#富文本编辑器上传配置
+ueditor:
+  #upload-path: Y\:/smartImage/
+  upload-path: /Users/zhping/UEDITOR/
+#基本配置
+spring:
+  profiles:
+#配置环境配置，dev（开发环境：application-dev.yml），test（测试环境：application-test.yml），prod（生产环境：application-prod.yml）
+    active: dev
+#数据源标准配置
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+  resources:
+#email config
+
+#Jackson字符串格式化
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+    date-format: "yyyy-MM-dd HH:mm:ss"
+    time-zone: GMT+8
+  mvc:
+    date-format: "yyyy-MM-dd"
+ 
+#MyBatis mappers location
+mybatis:
+  mapper-locations: classpath*:mybatis/**/*.xml
+#Web server port
+server:
+  port: 8089
+  session:
+    timeout: 0
+  context-path: /tu
+#排除拦截
+wx:
+  context-path: /signUp/**,/camera/jButtonLoginActionPerformed,/wx/**/**,/szMerchant/selectCount,/newsInfo/list,/screen/selectList,
+cherry:
+  origin-allowed: http://localhost:8083,http://localhost:8000
+#工作流的路径设置
+export:
+  diagram:
+    path: /tmp/process
+#路径前缀
+preUrl:
+  pre-path: http://192.168.0.140:8085
+#打卡设备ip和端口
+cameraPram:
+  deviceIp: 192.168.0.252
+  devicePort: 8000
+  loginName: admin
+  loginPwd: Hik12345
+#保存文件路径
+fileURL: http://192.168.0.49:8787/

@@ -1,0 +1,33 @@
+      
+SELECT t.natures_describe ,max(count) as count FROM,
+(select d.natures_describe, count(*) as count
+	from sc_danger d
+	left join  sc_natures n
+	on d.natures_id = n.ids
+	left join sc_industry_type i
+	on n.industry_type_id = i.ids
+	WHERE i.ids='fe6496d587cd4a289a148eaa4723b7fb'
+	group by d.natures_describe
+ UNION 
+SELECT NATURES_DESCRIBE,MAX(0) FROM sc_natures  WHERE industry_type_id ='fe6496d587cd4a289a148eaa4723b7fb' GROUP BY NATURES_DESCRIBE)  t group by t.natures_describe,
+
+
+
+
+select tmp.industry_name,sum(check_count) from,
+(
+select it.industry_name,nvl(t1.check_count,0) as check_count from 
+(select ap.industry_id,count(*) as check_count from sc_check_photo cp join sc_police_check_log pcl on cp.check_log_id = pcl.ids 
+join sc_activity_place ap on cp.activity_place_id = ap.ids join sc_police_duty_region pdr on ap.duty_region_id = pdr.ids 
+where substr(pdr.duty_region_code,0,6) = '420506'
+group by ap.industry_id) t1 right join sc_industry_type it on t1.industry_id = it.ids
+union
+select it.industry_name,nvl(t2.check_count,0) from 
+(select ap.industry_id,count(*) as check_count from sc_danger dang  join sc_police_check_log pcl on dang.check_log_id = pcl.ids 
+join sc_activity_place ap on dang.activity_place_id = ap.ids join sc_police_duty_region pdr on ap.duty_region_id = pdr.ids
+where substr(pdr.duty_region_code,0,6) = '420506' group by ap.industry_id ) t2 right join sc_industry_type it on t2.industry_id = it.ids) tmp group by tmp.industry_name,
+
+
+是啊是是大法官水电费是的
+
+

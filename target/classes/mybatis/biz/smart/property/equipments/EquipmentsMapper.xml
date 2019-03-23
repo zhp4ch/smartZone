@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mass.biz.smart.property.equipments.dao.EquipmentsMapper">
+  <resultMap id="BaseResultMap" type="com.mass.biz.smart.property.equipments.model.Equipments">
+   <result column="rid" property="rid" jdbcType="BIGINT"/>
+    <result column="device_no" jdbcType="VARCHAR" property="deviceNo" />
+    <result column="device_unit_price" jdbcType="VARCHAR" property="deviceUnitPrice" />
+    <result column="c_device_name" jdbcType="VARCHAR" property="cDeviceName" />
+    <result column="e_device_name" jdbcType="VARCHAR" property="eDeviceName" />
+    <result column="country" jdbcType="VARCHAR" property="country" />
+    <result column="factory" jdbcType="VARCHAR" property="factory" />
+    <result column="factory_time" jdbcType="VARCHAR" property="factoryTime" />
+    <result column="own_unit" jdbcType="VARCHAR" property="ownUnit" />
+    <result column="device_state" jdbcType="TINYINT" property="deviceState" />
+    <result column="place_location" jdbcType="VARCHAR" property="placeLocation" />
+    <result column="contact" jdbcType="VARCHAR" property="contact" />
+    <result column="contact_phone" jdbcType="VARCHAR" property="contactPhone" />
+    <result column="device_type" jdbcType="TINYINT" property="deviceType" />
+    <result column="create_time" jdbcType="VARCHAR" property="createTime" />
+    <result column="update_time" jdbcType="VARCHAR" property="updateTime" />
+    <result column="del_flag" jdbcType="TINYINT" property="delFlag" />
+    <result column="main_use" jdbcType="VARCHAR" property="mainUse" />
+    <result column="instructions" jdbcType="VARCHAR" property="instructions" />
+    <result column="photo_url" jdbcType="VARCHAR" property="photoUrl" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    rid, device_no, device_unit_price, c_device_name, e_device_name, country, factory, 
+    factory_time, own_unit, device_state, place_location, contact, contact_phone, device_type, 
+    create_time, update_time, del_flag, main_use, instructions, photo_url
+  </sql>
+  <select id="selectByExample" parameterType="com.mass.biz.smart.property.equipments.model.EquipmentsExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from sz_device_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+    <if test="pageIndex != null and pageSize>=0">
+      limit #{pageIndex} , #{pageSize}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sz_device_info
+    where rid = #{rid,jdbcType=BIGINT}
+  </select>
+  <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    update  sz_device_info set del_flag = 1
+    where rid = #{rid,jdbcType=BIGINT}
+  </update>
+  <delete id="deleteByExample" parameterType="com.mass.biz.smart.property.equipments.model.EquipmentsExample">
+    delete from sz_device_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.mass.biz.smart.property.equipments.model.Equipments">
+    insert into sz_device_info (rid, device_no, device_unit_price, 
+      c_device_name, e_device_name, country, 
+      factory, factory_time, own_unit, 
+      device_state, place_location, contact, 
+      contact_phone, device_type, create_time, 
+      update_time, del_flag, main_use, 
+      instructions, photo_url)
+    values (#{rid,jdbcType=BIGINT}, #{deviceNo,jdbcType=VARCHAR}, #{deviceUnitPrice,jdbcType=VARCHAR}, 
+      #{cDeviceName,jdbcType=VARCHAR}, #{eDeviceName,jdbcType=VARCHAR}, #{country,jdbcType=VARCHAR}, 
+      #{factory,jdbcType=VARCHAR}, #{factoryTime,jdbcType=VARCHAR}, #{ownUnit,jdbcType=VARCHAR}, 
+      #{deviceState,jdbcType=TINYINT}, #{placeLocation,jdbcType=VARCHAR}, #{contact,jdbcType=VARCHAR}, 
+      #{contactPhone,jdbcType=VARCHAR}, #{deviceType,jdbcType=TINYINT}, #{createTime,jdbcType=VARCHAR}, 
+      #{updateTime,jdbcType=VARCHAR}, #{delFlag,jdbcType=TINYINT}, #{mainUse,jdbcType=VARCHAR}, 
+      #{instructions,jdbcType=VARCHAR}, #{photoUrl,jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- 批量插入数据 -->
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="rid" useGeneratedKeys="true">
+    insert into sz_device_info
+    ( device_no, device_unit_price, 
+      c_device_name, e_device_name, country, 
+      factory, factory_time, own_unit, 
+      device_state, place_location, contact, 
+      contact_phone, device_type, 
+      update_time,  main_use, 
+      instructions,del_flag,create_time
+	 )values
+	 <foreach collection="list" item="item" index="index" separator=",">
+	 (
+	   #{item.deviceNo,jdbcType=VARCHAR}, #{item.deviceUnitPrice,jdbcType=VARCHAR}, 
+      #{item.cDeviceName,jdbcType=VARCHAR}, #{item.eDeviceName,jdbcType=VARCHAR}, #{item.country,jdbcType=VARCHAR}, 
+      #{item.factory,jdbcType=VARCHAR}, #{item.factoryTime,jdbcType=VARCHAR}, #{item.ownUnit,jdbcType=VARCHAR}, 
+      #{item.deviceState,jdbcType=TINYINT}, #{item.placeLocation,jdbcType=VARCHAR}, #{item.contact,jdbcType=VARCHAR}, 
+      #{item.contactPhone,jdbcType=VARCHAR}, #{item.deviceType,jdbcType=TINYINT}, 
+      #{item.updateTime,jdbcType=VARCHAR},#{item.mainUse,jdbcType=VARCHAR}, 
+      #{item.instructions,jdbcType=VARCHAR},0,NOW()
+	 )
+	 </foreach>
+    </insert>
+  
+  
+  
+  <insert id="insertSelective" parameterType="com.mass.biz.smart.property.equipments.model.Equipments">
+    insert into sz_device_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="rid != null">
+        rid,
+      </if>
+      <if test="deviceNo != null">
+        device_no,
+      </if>
+      <if test="deviceUnitPrice != null">
+        device_unit_price,
+      </if>
+      <if test="cDeviceName != null">
+        c_device_name,
+      </if>
+      <if test="eDeviceName != null">
+        e_device_name,
+      </if>
+      <if test="country != null">
+        country,
+      </if>
+      <if test="factory != null">
+        factory,
+      </if>
+      <if test="factoryTime != null">
+        factory_time,
+      </if>
+      <if test="ownUnit != null">
+        own_unit,
+      </if>
+      <if test="deviceState != null">
+        device_state,
+      </if>
+      <if test="placeLocation != null">
+        place_location,
+      </if>
+      <if test="contact != null">
+        contact,
+      </if>
+      <if test="contactPhone != null">
+        contact_phone,
+      </if>
+      <if test="deviceType != null">
+        device_type,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+      <if test="delFlag != null">
+        del_flag,
+      </if>
+      <if test="mainUse != null">
+        main_use,
+      </if>
+      <if test="instructions != null">
+        instructions,
+      </if>
+      <if test="photoUrl != null">
+        photo_url,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="rid != null">
+        #{rid,jdbcType=BIGINT},
+      </if>
+      <if test="deviceNo != null">
+        #{deviceNo,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceUnitPrice != null">
+        #{deviceUnitPrice,jdbcType=VARCHAR},
+      </if>
+      <if test="cDeviceName != null">
+        #{cDeviceName,jdbcType=VARCHAR},
+      </if>
+      <if test="eDeviceName != null">
+        #{eDeviceName,jdbcType=VARCHAR},
+      </if>
+      <if test="country != null">
+        #{country,jdbcType=VARCHAR},
+      </if>
+      <if test="factory != null">
+        #{factory,jdbcType=VARCHAR},
+      </if>
+      <if test="factoryTime != null">
+        #{factoryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="ownUnit != null">
+        #{ownUnit,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceState != null">
+        #{deviceState,jdbcType=TINYINT},
+      </if>
+      <if test="placeLocation != null">
+        #{placeLocation,jdbcType=VARCHAR},
+      </if>
+      <if test="contact != null">
+        #{contact,jdbcType=VARCHAR},
+      </if>
+      <if test="contactPhone != null">
+        #{contactPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceType != null">
+        #{deviceType,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=VARCHAR},
+      </if>
+      <if test="delFlag != null">
+        #{delFlag,jdbcType=TINYINT},
+      </if>
+      <if test="mainUse != null">
+        #{mainUse,jdbcType=VARCHAR},
+      </if>
+      <if test="instructions != null">
+        #{instructions,jdbcType=VARCHAR},
+      </if>
+      <if test="photoUrl != null">
+        #{photoUrl,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.mass.biz.smart.property.equipments.model.EquipmentsExample" resultType="java.lang.Long">
+    select count(*) from sz_device_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update sz_device_info
+    <set>
+      <if test="record.rid != null">
+        rid = #{record.rid,jdbcType=BIGINT},
+      </if>
+      <if test="record.deviceNo != null">
+        device_no = #{record.deviceNo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.deviceUnitPrice != null">
+        device_unit_price = #{record.deviceUnitPrice,jdbcType=VARCHAR},
+      </if>
+      <if test="record.cDeviceName != null">
+        c_device_name = #{record.cDeviceName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.eDeviceName != null">
+        e_device_name = #{record.eDeviceName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.country != null">
+        country = #{record.country,jdbcType=VARCHAR},
+      </if>
+      <if test="record.factory != null">
+        factory = #{record.factory,jdbcType=VARCHAR},
+      </if>
+      <if test="record.factoryTime != null">
+        factory_time = #{record.factoryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.ownUnit != null">
+        own_unit = #{record.ownUnit,jdbcType=VARCHAR},
+      </if>
+      <if test="record.deviceState != null">
+        device_state = #{record.deviceState,jdbcType=TINYINT},
+      </if>
+      <if test="record.placeLocation != null">
+        place_location = #{record.placeLocation,jdbcType=VARCHAR},
+      </if>
+      <if test="record.contact != null">
+        contact = #{record.contact,jdbcType=VARCHAR},
+      </if>
+      <if test="record.contactPhone != null">
+        contact_phone = #{record.contactPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="record.deviceType != null">
+        device_type = #{record.deviceType,jdbcType=TINYINT},
+      </if>
+      <if test="record.createTime != null">
+        create_time = #{record.createTime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.updateTime != null">
+        update_time = #{record.updateTime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.delFlag != null">
+        del_flag = #{record.delFlag,jdbcType=TINYINT},
+      </if>
+      <if test="record.mainUse != null">
+        main_use = #{record.mainUse,jdbcType=VARCHAR},
+      </if>
+      <if test="record.instructions != null">
+        instructions = #{record.instructions,jdbcType=VARCHAR},
+      </if>
+      <if test="record.photoUrl != null">
+        photo_url = #{record.photoUrl,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update sz_device_info
+    set rid = #{record.rid,jdbcType=BIGINT},
+      device_no = #{record.deviceNo,jdbcType=VARCHAR},
+      device_unit_price = #{record.deviceUnitPrice,jdbcType=VARCHAR},
+      c_device_name = #{record.cDeviceName,jdbcType=VARCHAR},
+      e_device_name = #{record.eDeviceName,jdbcType=VARCHAR},
+      country = #{record.country,jdbcType=VARCHAR},
+      factory = #{record.factory,jdbcType=VARCHAR},
+      factory_time = #{record.factoryTime,jdbcType=VARCHAR},
+      own_unit = #{record.ownUnit,jdbcType=VARCHAR},
+      device_state = #{record.deviceState,jdbcType=TINYINT},
+      place_location = #{record.placeLocation,jdbcType=VARCHAR},
+      contact = #{record.contact,jdbcType=VARCHAR},
+      contact_phone = #{record.contactPhone,jdbcType=VARCHAR},
+      device_type = #{record.deviceType,jdbcType=TINYINT},
+      create_time = #{record.createTime,jdbcType=VARCHAR},
+      update_time = #{record.updateTime,jdbcType=VARCHAR},
+      del_flag = #{record.delFlag,jdbcType=TINYINT},
+      main_use = #{record.mainUse,jdbcType=VARCHAR},
+      instructions = #{record.instructions,jdbcType=VARCHAR},
+      photo_url = #{record.photoUrl,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.mass.biz.smart.property.equipments.model.Equipments">
+    update sz_device_info
+    <set>
+      <if test="deviceNo != null">
+        device_no = #{deviceNo,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceUnitPrice != null">
+        device_unit_price = #{deviceUnitPrice,jdbcType=VARCHAR},
+      </if>
+      <if test="cDeviceName != null">
+        c_device_name = #{cDeviceName,jdbcType=VARCHAR},
+      </if>
+      <if test="eDeviceName != null">
+        e_device_name = #{eDeviceName,jdbcType=VARCHAR},
+      </if>
+      <if test="country != null">
+        country = #{country,jdbcType=VARCHAR},
+      </if>
+      <if test="factory != null">
+        factory = #{factory,jdbcType=VARCHAR},
+      </if>
+      <if test="factoryTime != null">
+        factory_time = #{factoryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="ownUnit != null">
+        own_unit = #{ownUnit,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceState != null">
+        device_state = #{deviceState,jdbcType=TINYINT},
+      </if>
+      <if test="placeLocation != null">
+        place_location = #{placeLocation,jdbcType=VARCHAR},
+      </if>
+      <if test="contact != null">
+        contact = #{contact,jdbcType=VARCHAR},
+      </if>
+      <if test="contactPhone != null">
+        contact_phone = #{contactPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceType != null">
+        device_type = #{deviceType,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=VARCHAR},
+      </if>
+      <if test="delFlag != null">
+        del_flag = #{delFlag,jdbcType=TINYINT},
+      </if>
+      <if test="mainUse != null">
+        main_use = #{mainUse,jdbcType=VARCHAR},
+      </if>
+      <if test="instructions != null">
+        instructions = #{instructions,jdbcType=VARCHAR},
+      </if>
+      <if test="photoUrl != null">
+        photo_url = #{photoUrl,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where rid = #{rid,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.mass.biz.smart.property.equipments.model.Equipments">
+    update sz_device_info
+    set device_no = #{deviceNo,jdbcType=VARCHAR},
+      device_unit_price = #{deviceUnitPrice,jdbcType=VARCHAR},
+      c_device_name = #{cDeviceName,jdbcType=VARCHAR},
+      e_device_name = #{eDeviceName,jdbcType=VARCHAR},
+      country = #{country,jdbcType=VARCHAR},
+      factory = #{factory,jdbcType=VARCHAR},
+      factory_time = #{factoryTime,jdbcType=VARCHAR},
+      own_unit = #{ownUnit,jdbcType=VARCHAR},
+      device_state = #{deviceState,jdbcType=TINYINT},
+      place_location = #{placeLocation,jdbcType=VARCHAR},
+      contact = #{contact,jdbcType=VARCHAR},
+      contact_phone = #{contactPhone,jdbcType=VARCHAR},
+      device_type = #{deviceType,jdbcType=TINYINT},
+      create_time = #{createTime,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=VARCHAR},
+      del_flag = #{delFlag,jdbcType=TINYINT},
+      main_use = #{mainUse,jdbcType=VARCHAR},
+      instructions = #{instructions,jdbcType=VARCHAR},
+      photo_url = #{photoUrl,jdbcType=VARCHAR}
+    where rid = #{rid,jdbcType=BIGINT}
+  </update>
+  
+
+</mapper>

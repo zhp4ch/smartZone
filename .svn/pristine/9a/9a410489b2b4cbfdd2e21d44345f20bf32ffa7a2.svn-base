@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.smart.property.propertyPriceStatistics.dao.PropertyPriceMapper">
+    <resultMap id="propertyPrice" type="com.mass.biz.smart.property.propertyPriceStatistics.model.PropertyPrice">
+        <result property="id" column="ID" jdbcType="BIGINT"/>
+        <result property="userId" column="USER_ID" jdbcType="BIGINT"/>
+        <result property="name" column="NAME" jdbcType="VARCHAR"/>
+        <result property="shouldPayDate" column="SHOULD_PAY_DATE" jdbcType="VARCHAR"/>
+        <result property="building" column="BUILDING" jdbcType="VARCHAR"/>
+        <result property="parkNumber" column="PARK_NUMBER" jdbcType="VARCHAR"/>
+        <result property="roomNumber" column="ROOM_NUMBER" jdbcType="VARCHAR"/>
+        <result property="payManner" column="PAY_MANNER" jdbcType="TINYINT"/>
+        <result property="propertyCharge" column="PROPERTY_CHARGE" jdbcType="VARCHAR"/>
+        <result property="hydropowerCharge" column="HYDROPOWER_CHARGE" jdbcType="VARCHAR"/>
+        <result property="receiptNumber" column="RECEIPT_NUMBER" jdbcType="VARCHAR"/>
+        <result property="payState" column="PAY_STATE" jdbcType="TINYINT"/>
+        <result property="total" column="TOTAL" jdbcType="VARCHAR"/>
+        <result property="payDate" column="PAY_DATE" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="DEL_FLAG" jdbcType="TINYINT"/>
+        <result property="createTime" column="CREATE_TIME" jdbcType="TIMESTAMP"/>
+        <result property="corporateName" column="corporate_Name" jdbcType="VARCHAR"/>
+        <result property="abbreviation" column="abbreviation" jdbcType="VARCHAR"/>
+        <result property="isCollection" column="is_Collection" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="baseSql">
+        t1.ID,t1.USER_ID,t1.NAME,t1.SHOULD_PAY_DATE,t1.BUILDING,t1.PARK_NUMBER,
+        t1.ROOM_NUMBER,t1.PAY_MANNER,t1.PROPERTY_CHARGE,t1.HYDROPOWER_CHARGE,
+        t1.RECEIPT_NUMBER,t1.PAY_STATE,t1.TOTAL,t1.PAY_DATE,t1.DEL_FLAG,t1.create_time
+    </sql>
+
+    
+    <select id="selectPageList" resultMap="propertyPrice">
+       SELECT
+			<include refid="baseSql"/>
+		FROM
+			sz_propertystatistics t1
+		WHERE t1.DEL_FLAG =0
+   		<if test="propertyPrice.name !=null and propertyPrice.name !='' ">
+            AND t1.NAME LIKE CONCAT("%", #{propertyPrice.name, jdbcType=VARCHAR}, "%")
+        </if> 
+        <if test="propertyPrice.createTimeBefore !=null and propertyPrice.createTimeBefore !='' ">
+        	AND <![CDATA[DATE_FORMAT(t1.CREATE_TIME,'%Y-%m-%d') >=  DATE_FORMAT(#{propertyPrice.createTimeBefore},'%Y-%m-%d')]]>
+        </if>
+        <if test="propertyPrice.createTimeAfter !=null and propertyPrice.createTimeAfter!='' ">
+        	AND <![CDATA[DATE_FORMAT(t1.CREATE_TIME,'%Y-%m-%d') <=  DATE_FORMAT(#{propertyPrice.createTimeAfter},'%Y-%m-%d')]]>
+        </if>
+        <if test="propertyPrice.parkNumber !=null and propertyPrice.parkNumber !='' ">
+            AND t1.PARK_NUMBER = #{propertyPrice.parkNumber, jdbcType=VARCHAR}
+        </if>
+        <if test="propertyPrice.receiptNumber !=null and propertyPrice.receiptNumber !='' ">
+            AND t1.receipt_Number = #{propertyPrice.receiptNumber, jdbcType=VARCHAR}
+        </if> 
+        <if test="propertyPrice.payState !=null and propertyPrice.payState !='' ">
+            AND t1.pay_State = #{propertyPrice.payState, jdbcType=TINYINT}
+        </if>   
+        ORDER BY ID
+        LIMIT #{pageIndex},#{pageSize}
+    </select>
+    
+    <select id="count" resultType="java.lang.Long" parameterType="com.mass.biz.smart.property.propertyPriceStatistics.model.PropertyPrice">
+       SELECT
+			count(0)
+		FROM
+			sz_propertystatistics t1
+		WHERE t1.DEL_FLAG =0
+   		<if test="name !=null and name !='' ">
+            AND t1.NAME LIKE CONCAT("%", #{name, jdbcType=VARCHAR}, "%")
+        </if> 
+        <if test="createTimeBefore !=null and createTimeBefore !='' ">
+        	AND <![CDATA[DATE_FORMAT(t1.CREATE_TIME,'%Y-%m-%d') >=  DATE_FORMAT(#{createTimeBefore},'%Y-%m-%d')]]>
+        </if>
+        <if test="createTimeAfter !=null and createTimeAfter!='' ">
+        	AND <![CDATA[DATE_FORMAT(t1.CREATE_TIME,'%Y-%m-%d') <=  DATE_FORMAT(#{createTimeAfter},'%Y-%m-%d')]]>
+        </if>
+        ORDER BY ID
+    </select>
+    
+ 
+    <select id="getPropertyPriceById" resultMap="propertyPrice">
+        SELECT
+			<include refid="baseSql"/>
+		FROM
+			sz_propertystatistics t1
+		WHERE t1.DEL_FLAG =0 AND ID = #{id,jdbcType=BIGINT}
+    </select>
+    
+    <insert  id="addPropertyPrice" useGeneratedKeys="true" keyProperty="id" parameterType="com.mass.biz.smart.property.propertyPriceStatistics.model.PropertyPrice">
+        INSERT INTO	sz_propertystatistics
+         (
+         	user_Id,name,should_Pay_Date,building,park_Number,room_Number,pay_Manner,
+         	property_Charge,hydropower_Charge,pay_State,total,DEL_FLAG,create_time
+	        )
+     	VALUES (
+	        #{userId,jdbcType=BIGINT},
+	        #{name,jdbcType=VARCHAR},
+	        #{shouldPayDate,jdbcType=VARCHAR},
+	        #{building,jdbcType=VARCHAR},
+	        #{parkNumber,jdbcType=VARCHAR},
+	        #{roomNumber,jdbcType=VARCHAR},
+	        #{payManner,jdbcType=TINYINT},
+	        #{propertyCharge,jdbcType=VARCHAR},
+	        #{hydropowerCharge,jdbcType=TINYINT},
+	        1,
+	        #{total,jdbcType=VARCHAR},
+	        0,
+	        NOW()
+	        );
+    </insert>
+
+    <update id="editPropertyPrice" parameterType="com.mass.biz.smart.property.propertyPriceStatistics.model.PropertyPrice">
+        UPDATE sz_propertystatistics    
+        <set>
+        	<if test="userId !=null ">user_Id=#{userId,jdbcType=BIGINT},</if>
+        	<if test="name !=null and name !=''">name=#{name,jdbcType=VARCHAR},</if>
+        	<if test="shouldPayDate !=null ">should_Pay_Date=#{shouldPayDate,jdbcType=VARCHAR},</if>
+     	    <if test="building !=null and building !=''">building=#{building,jdbcType=VARCHAR},</if>
+     	    <if test="parkNumber !=null and parkNumber !=''">park_Number=#{parkNumber,jdbcType=VARCHAR},</if>
+     	    <if test="roomNumber !=null and roomNumber !=''">room_Number=#{roomNumber,jdbcType=VARCHAR},</if>
+     	    <if test="payManner !=null and payManner !=''">pay_Manner=#{payManner,jdbcType=TINYINT},</if>
+     	    <if test="propertyCharge !=null and propertyCharge !=''">property_Charge=#{propertyCharge,jdbcType=VARCHAR},</if>
+     	    <if test="hydropowerCharge !=null and hydropowerCharge !=''">hydropower_Charge=#{hydropowerCharge,jdbcType=VARCHAR},</if>
+     	    <if test="receiptNumber !=null and receiptNumber !=''">receipt_Number=#{receiptNumber,jdbcType=VARCHAR},</if>
+     	    <if test="payState !=null and payState !=''">pay_State=#{payState,jdbcType=TINYINT},</if>
+            <if test="total !=null and total !=''">total=#{total,jdbcType=VARCHAR},</if>
+            <if test="payDate !=null and payDate !=''">pay_Date=#{payDate,jdbcType=VARCHAR},</if>
+            <if test="isCollection !=null and isCollection !=''">is_Collection=#{isCollection,jdbcType=VARCHAR},</if>
+        </set>
+        WHERE ID=#{id,jdbcType=BIGINT}
+    </update>
+    
+    <update id="delPropertyPrice" parameterType="java.lang.Long">
+        UPDATE sz_propertystatistics
+        SET DEL_FLAG = 1
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+    
+    <select id="queryUserByCreateTime" resultMap="propertyPrice">
+       select t2.name,t2.rid as USER_ID from sz_user t2 
+       where t2.is_delete = 0 and t2.rid not in 
+       (SELECT t1.user_id from sz_propertystatistics t1 where SUBSTRING(t1.create_time,1,7)=SUBSTRING(now(),1,7) and t1.del_flag=0)
+    </select>
+    
+    <select id="queryTotalByMonth" resultMap="propertyPrice">
+       select 
+       <include refid="baseSql"/>
+       from sz_propertystatistics t1
+       where SUBSTRING(t1.should_Pay_Date,1,7)=#{payDate,jdbcType=VARCHAR} and t1.del_flag=0
+    </select>
+    
+    <select id="queryAllTotalByYear" resultMap="propertyPrice">
+       select 
+       sum(t1.total) as total, SUBSTRING(t1.should_Pay_Date,6,2) as should_Pay_Date
+       from sz_propertystatistics t1
+       where SUBSTRING(t1.should_Pay_Date,1,4)=#{payDate,jdbcType=VARCHAR} and t1.del_flag=0 and t1.PAY_DATE is not null
+       and pay_State =2
+        GROUP BY SUBSTRING(t1.should_Pay_Date,6,2)
+    </select>
+    
+    <select id="getByIdCode" resultMap="propertyPrice">
+       select t2.rid as user_id
+       from sz_user t2
+       where t2.id_code=#{idCode,jdbcType=VARCHAR} and t2.is_delete = 0
+    </select>
+    
+    <select id="getCountByUserId" resultType="java.lang.Long" parameterType="com.mass.biz.smart.property.propertyPriceStatistics.model.PropertyPrice">
+       select count(0)
+       from sz_propertystatistics
+       where user_id=#{userId,jdbcType=BIGINT} and del_flag = 0
+       and SUBSTRING(should_Pay_Date,1,7)=SUBSTRING(#{shouldPayDate,jdbcType=VARCHAR},1,7)
+    </select>
+    
+    <select id="getPropertyPriceByUserId" resultMap="propertyPrice">
+       select
+       <include refid="baseSql"/>
+       from sz_propertystatistics t1
+       where t1.user_id=#{userId,jdbcType=BIGINT} and t1.del_flag = 0
+    </select>
+    
+     <select id="getMerchantByUserId" resultMap="propertyPrice">
+       select
+       t1.abbreviation,t1.corporate_Name
+       from sz_merchant t1 where t1.id=
+       (SELECT t.merchant_id from sz_user t where t.rid=#{userId,jdbcType=BIGINT})
+    </select>
+    
+    <select id="queryPriceCountByuserId" resultMap="propertyPrice">
+       select
+       <include refid="baseSql"/>
+       from sz_propertystatistics t1 where t1.user_id=#{userId,jdbcType=BIGINT} 
+       and t1.is_Collection =0
+       and t1.pay_State =1
+       and <![CDATA[DATE_FORMAT(date_sub(SUBSTRING(t1.should_Pay_Date,1,10) ,interval 3 day),'%Y-%m-%d') <=  DATE_FORMAT(SUBSTRING(NOW(),1,10),'%Y-%m-%d')]]>
+    </select>
+
+</mapper>

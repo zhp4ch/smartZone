@@ -1,0 +1,112 @@
+package com.mass.biz.smart.merchant.dao;
+
+import com.mass.biz.smart.merchant.model.SzMerchant;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @ClassName 商户入驻
+ * @Author 郑上进
+ * @Date 2018/7/17 11:55
+ * @Version 1.0
+ **/
+@Mapper
+public interface SzMerchantMapper {
+
+    /*流程管理*/
+
+    /**
+     * 根据id查询
+     *
+     * @Author 郑上进
+     * @Date 15:32 2018/7/17
+     **/
+    SzMerchant getFlowById(@Param("id") Long id);
+
+    /**
+     * 修改流程
+     *
+     * @Author 郑上进
+     * @Date 15:31 2018/7/17
+     **/
+    int updateFlow(SzMerchant szMerchant);
+
+
+    /*入驻管理*/
+
+    /**
+     * 分页列表查询
+     *
+     * @Author 郑上进
+     * @Date 15:29 2018/7/17
+     **/
+    List<SzMerchant> selectPageList(@Param("searchParams") SzMerchant szMerchant,
+                                    @Param("offset") Integer offset, @Param("limit") Integer limit);
+
+    /**
+     * 统计总条数
+     *
+     * @Author 郑上进
+     * @Date 15:36 2018/7/17
+     **/
+    long count(SzMerchant szMerchant);
+
+    /**
+     * 新增
+     *
+     * @Author 郑上进
+     * @Date 15:31 2018/7/17
+     **/
+    int insert(SzMerchant szMerchant);
+
+    /**
+     * 修改
+     *
+     * @Author 郑上进
+     * @Date 15:31 2018/7/17
+     **/
+    int update(SzMerchant szMerchant);
+
+    /**
+     * 根据id查询一条数据
+     *
+     * @Author 郑上进
+     * @Date 15:32 2018/7/17
+     **/
+    SzMerchant getEntityById(@Param("id") Long id);
+    
+    /**根据公司code查询一条数据
+     * 
+     * @Author 王奕明
+     * @Date 15:32 2018/8/7
+     **/
+    SzMerchant getEntityByCode(@Param("merchant_code") String merchant_code);
+
+    /**
+     * 删除
+     *
+     * @Author 郑上进
+     * @Date 15:31 2018/7/17
+     **/
+    int delete(@Param("id") Long id);
+
+    List<Object> selectCount();
+    /**
+     * 根据条件查询企业信息,不分页
+     * @param szMerchant
+     * @return
+     */
+    List<SzMerchant> selectByCondition(@Param("searchParams") SzMerchant szMerchant);
+    
+    /**
+     * 用户所属公司信息
+     * @param user_id
+     * @return
+     */
+    SzMerchant getEntityByUserid(Long user_id);
+    
+
+}

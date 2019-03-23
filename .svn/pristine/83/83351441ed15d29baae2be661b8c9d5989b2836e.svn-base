@@ -1,0 +1,14 @@
+package com.mass.biz.smart.screen.service;
+
+import com.mass.biz.smart.screen.model.Screen;
+import com.mass.core.utils.AjaxResponse;
+
+/**
+ * 
+ * @author zhping
+ *
+ */
+public interface ScreenService {
+	AjaxResponse update(Screen screen);
+	AjaxResponse selectList();
+}

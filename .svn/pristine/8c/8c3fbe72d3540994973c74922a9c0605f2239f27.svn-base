@@ -1,0 +1,47 @@
+package com.mass.biz.smart.merchant.controller;
+
+import com.mass.biz.news.controller.NewsController;
+import com.mass.biz.smart.merchant.model.SzMerchant;
+import com.mass.biz.smart.merchant.service.SzMerchantService;
+import com.mass.core.utils.AjaxResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpSession;
+import java.util.List;
+import java.util.Map;
+
+import static com.mass.core.utils.AjaxResponse.FAILURE_EDIT_ENTITY;
+
+/**
+ * @ClassName 商户入驻
+ * @Author 郑上进
+ * @Date 2018/7/17 14:59
+ * @Version 1.0
+ **/
+@RestController
+@RequestMapping(value = "/wx/szMerchant")
+public class SzMerchantWXController {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(NewsController.class);
+
+    @Autowired
+    private SzMerchantService szMerchantService;
+
+    @RequestMapping(value = "/selectByCondition", method = RequestMethod.POST)
+    public AjaxResponse selectByCondition(SzMerchant szMerchant) {
+    	  try {
+              List<SzMerchant> list = szMerchantService.selectByCondition(szMerchant);
+              return AjaxResponse.success("ok", list);
+          } catch (Exception e) {
+              e.printStackTrace();
+              LOGGER.error("select sz error!", e);
+              return AjaxResponse.error("error");
+          }
+    }
+}

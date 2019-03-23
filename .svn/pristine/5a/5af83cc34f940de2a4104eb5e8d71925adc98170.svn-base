@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mass.biz.smart.services.ConferenceRoom.dao.RoomMapper">
+
+    <resultMap id="room" type="com.mass.biz.smart.services.ConferenceRoom.model.Room">
+
+        <result column="ID" property="id" jdbcType="BIGINT"/>
+        <result column="BOARD_ROOM" property="boardRoom" jdbcType="VARCHAR"/>
+        <result column="PPE_NUMBER" property="ppeNumber" jdbcType="BIGINT"/>
+        <result column="AVAILABLE_TIME_BEGIN" property="availableTimeBegin" jdbcType="VARCHAR"/>
+        <result column="AVAILABLE_TIME_END" property="availableTimeEnd" jdbcType="VARCHAR"/>
+        <result column="USAGE_STATE" property="usageState" jdbcType="BIGINT"/>
+        <result column="ROOM_STATE" property="roomState" jdbcType="BIGINT"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="DEL_FLAG" property="delFlag" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <!--会议室管理表-->
+    <sql id="baseSql">
+        T1.ID, T1.BOARD_ROOM, T1.PPE_NUMBER, T1.AVAILABLE_TIME_BEGIN, T1.AVAILABLE_TIME_END,
+        T1.USAGE_STATE, T1.ROOM_STATE, T1.CREATE_TIME, T1.DEL_FLAG
+    </sql>
+
+    <!-- 会议室管理分页查询及总数 -->
+    <select id="selectPageList" resultMap="room">
+        SELECT
+        <include refid="baseSql"/>
+        FROM
+        sz_conferenceroom T1
+        WHERE
+        T1.DEL_FLAG = 0
+        <if test="searchParams !=null ">
+
+            <if test="searchParams.boardRoom !=null and searchParams.boardRoom !=''">
+                AND T1.BOARD_ROOM LIKE CONCAT("%", #{searchParams.boardRoom, jdbcType=VARCHAR}, "%")
+            </if>
+
+            <if test="searchParams.usageState !=null">
+                AND T1.USAGE_STATE = #{searchParams.usageState, jdbcType=TINYINT}
+            </if>
+
+        </if>
+        ORDER BY T1.CREATE_TIME DESC
+        LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+    </select>
+
+    <!--统计总条数-->
+    <select id="count" resultType="java.lang.Long"
+            parameterType="com.mass.biz.smart.services.ConferenceRoom.model.Room">
+        SELECT
+        COUNT(0)
+        FROM
+        sz_conferenceroom T1
+        WHERE
+        T1.DEL_FLAG=0
+
+        <if test="boardRoom !=null and boardRoom !=''">
+            AND T1.BOARD_ROOM LIKE CONCAT("%", #{boardRoom, jdbcType=VARCHAR}, "%")
+        </if>
+
+        <if test="usageState !=null">
+            AND T1.USAGE_STATE = #{usageState, jdbcType=TINYINT}
+        </if>
+
+    </select>
+
+    <!--新增数据(会议室新增)-->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.mass.biz.smart.services.ConferenceRoom.model.Room">
+        INSERT sz_conferenceroom
+        (
+            BOARD_ROOM,
+            PPE_NUMBER,
+            AVAILABLE_TIME_BEGIN,
+            AVAILABLE_TIME_END,
+            USAGE_STATE,
+            ROOM_STATE,
+            CREATE_TIME,
+            DEL_FLAG
+        )
+        VALUES (
+            #{boardRoom,jdbcType=VARCHAR},
+            #{ppeNumber,jdbcType=BIGINT},
+            #{availableTimeBegin,jdbcType=VARCHAR},
+            #{availableTimeEnd,jdbcType=VARCHAR},
+            0,
+            0,
+            NOW(),
+            0
+        )
+    </insert>
+
+    <!-- 修改数据(修改会议室)-->
+    <update id="update" parameterType="com.mass.biz.smart.services.ConferenceRoom.model.Room">
+        UPDATE sz_conferenceroom
+        <set>
+            <if test="boardRoom !=null and boardRoom !=''">
+                BOARD_ROOM=#{boardRoom,jdbcType=VARCHAR},
+            </if>
+            <if test="ppeNumber !=null and ppeNumber !=''">
+                PPE_NUMBER=#{ppeNumber,jdbcType=BIGINT},
+            </if>
+            <if test="availableTimeBegin != null and availableTimeBegin!='' ">
+                AVAILABLE_TIME_BEGIN=#{availableTimeBegin,jdbcType=VARCHAR},
+            </if>
+            <if test="availableTimeEnd != null and availableTimeEnd!='' ">
+                AVAILABLE_TIME_END=#{availableTimeEnd,jdbcType=VARCHAR},
+            </if>
+            <if test="usageState !=null">
+                USAGE_STATE=#{usageState,jdbcType=BIGINT},
+            </if>
+            <if test="roomState !=null">
+                ROOM_STATE=#{roomState,jdbcType=BIGINT},
+            </if>
+        </set>
+        WHERE ID=#{id,jdbcType=BIGINT}
+    </update>
+
+    <!--删除数据-->
+    <update id="delete" parameterType="java.lang.Long">
+        UPDATE sz_conferenceroom
+        SET DEL_FLAG = 1
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!-- 根据id查询数据 -->
+    <select id="getEntityById" resultMap="room">
+    SELECT
+    <include refid="baseSql"/>
+    FROM
+    sz_conferenceroom T1
+    WHERE
+    T1.ID=#{id,jdbcType=BIGINT}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,163 @@
+package com.mass.biz.smart.topic.model;
+
+/**
+ * 话题评论回复的实体类
+ * @author
+ * @date 2018/07-25 
+ *
+ */
+public class TopicReply {
+
+		private Long rid; //主键
+		
+		private Long topicId; //话题ID
+		
+		private Long replyId; //评论id
+		
+		private String reply; //评论
+		
+		private String openId; //微信open_id
+		
+		private String createTime; //评论时间
+		
+		private Integer isDelete; //评论（是否删除：0-否，1-是）
+		
+		private Long ridRe;   //回复的主键
+		
+		private String replyRe;   //回复
+		
+		private Integer isDeleteRe;  //回复（是否删除：0-否，1-是）
+		
+		private String createTimeRe; //回复（回复的时间）
+		
+		private String nickName;  //评论人姓名
+		
+		private String headImage;  //评论人头像
+		
+		private String nickNameRe;  //回复人姓名
+		
+		private Long user_id;  //微信user_id
+		
+
+		public Long getUser_id() {
+			return user_id;
+		}
+
+		public void setUser_id(Long user_id) {
+			this.user_id = user_id;
+		}
+
+		public Long getRid() {
+			return rid;
+		}
+
+		public void setRid(Long rid) {
+			this.rid = rid;
+		}
+
+		public Long getTopicId() {
+			return topicId;
+		}
+
+		public void setTopicId(Long topicId) {
+			this.topicId = topicId;
+		}
+
+		public Long getReplyId() {
+			return replyId;
+		}
+
+		public void setReplyId(Long replyId) {
+			this.replyId = replyId;
+		}
+
+		public String getReply() {
+			return reply;
+		}
+
+		public void setReply(String reply) {
+			this.reply = reply;
+		}
+
+		public String getOpenId() {
+			return openId;
+		}
+
+		public void setOpenId(String openId) {
+			this.openId = openId;
+		}
+
+		public String getCreateTime() {
+			return createTime;
+		}
+
+		public void setCreateTime(String createTime) {
+			this.createTime = createTime;
+		}
+
+		public Integer getIsDelete() {
+			return isDelete;
+		}
+
+		public void setIsDelete(Integer isDelete) {
+			this.isDelete = isDelete;
+		}
+
+		public Long getRidRe() {
+			return ridRe;
+		}
+
+		public void setRidRe(Long ridRe) {
+			this.ridRe = ridRe;
+		}
+
+		public String getReplyRe() {
+			return replyRe;
+		}
+
+		public void setReplyRe(String replyRe) {
+			this.replyRe = replyRe;
+		}
+
+		public Integer getIsDeleteRe() {
+			return isDeleteRe;
+		}
+
+		public void setIsDeleteRe(Integer isDeleteRe) {
+			this.isDeleteRe = isDeleteRe;
+		}
+
+		public String getCreateTimeRe() {
+			return createTimeRe;
+		}
+
+		public void setCreateTimeRe(String createTimeRe) {
+			this.createTimeRe = createTimeRe;
+		}
+
+		public String getNickName() {
+			return nickName;
+		}
+
+		public void setNickName(String nickName) {
+			this.nickName = nickName;
+		}
+
+		public String getHeadImage() {
+			return headImage;
+		}
+
+		public void setHeadImage(String headImage) {
+			this.headImage = headImage;
+		}
+
+		public String getNickNameRe() {
+			return nickNameRe;
+		}
+
+		public void setNickNameRe(String nickNameRe) {
+			this.nickNameRe = nickNameRe;
+		}
+		
+		
+}

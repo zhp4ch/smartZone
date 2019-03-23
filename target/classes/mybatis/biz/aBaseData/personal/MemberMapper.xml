@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.aBaseData.personal.dao.MemberMapper">
+    <resultMap id="Member" type="com.mass.biz.aBaseData.personal.model.Personal">
+        <result property="id" column="ID" jdbcType="BIGINT"/>
+		<result property="name" column="NAME" jdbcType="VARCHAR"/>
+        <result property="idcard" column="IDCARD" jdbcType="VARCHAR"/>
+        <result property="sex" column="SEX" jdbcType="TINYINT"/>
+        <result property="birthdate" column="BIRTHDATE" jdbcType="VARCHAR"/>
+        <result property="mobilePhone" column="MOBILE_PHONE" jdbcType="VARCHAR"/>
+        <result property="nation" column="NATION" jdbcType="VARCHAR"/>
+        <result property="nationDesc" column="NATION_DESC" jdbcType="VARCHAR"/>
+        <result property="political" column="POLITICAL" jdbcType="VARCHAR"/>
+        <result property="politicalDesc" column="POLITICAL_DESC" jdbcType="VARCHAR"/>
+        <result property="positions" column="POSITIONS" jdbcType="VARCHAR"/>
+        <result property="positionalTitle" column="POSITIONAL_TITLE" jdbcType="VARCHAR"/>
+        <result property="insuredStatus" column="INSURED_STATUS" jdbcType="VARCHAR"/>
+        <result property="profSkill" column="PROF_SKILL" jdbcType="VARCHAR"/>
+        <result property="craft" column="CRAFT" jdbcType="VARCHAR"/>
+        <result property="education" column="EDUCATION" jdbcType="VARCHAR"/>
+        <result property="educationDesc" column="EDUCATION_DESC" jdbcType="VARCHAR"/>
+        <result property="registerType" column="REGISTER_TYPE" jdbcType="VARCHAR"/>
+        <result property="registerDesc" column="REGISTER_DESC" jdbcType="VARCHAR"/>
+        <result property="workStatus" column="WORK_STATUS" jdbcType="VARCHAR"/>
+        <result property="workDesc" column="WORK_DESC" jdbcType="VARCHAR"/>
+        <result property="description" column="DESCRIPTION" jdbcType="VARCHAR"/>
+        <result property="unitId" column="UNIT_ID" jdbcType="BIGINT"/>
+        <result property="unitName" column="UNIT_NAME" jdbcType="VARCHAR"/>
+        <result property="lastOperatorId" column="LAST_OPERATOR_ID" jdbcType="BIGINT"/>
+        <result property="updateTime" column="UPDATE_TIME" jdbcType="TIMESTAMP"/>
+        <result property="flag" column="FLAG" jdbcType="TINYINT"/>
+            
+		<!--单位信息 -->
+        <result property="unitInfo.id" column="U_UNIT_ID" jdbcType="BIGINT"/>
+        <result property="unitInfo.unitName" column="U_UNIT_NAME" jdbcType="VARCHAR"/>
+		<result property="unitInfo.unitAddress" column="UNIT_ADDRESS" jdbcType="VARCHAR"/>
+		<result property="unitInfo.unitPhone" column="UNIT_PHONE" jdbcType="VARCHAR"/>
+	    <result property="unitInfo.unitPostalCode" column="UNIT_POSTAL_CODE" jdbcType="VARCHAR"/>
+		<result property="unitInfo.organizationCode" column="ORGANIZATION_CODE" jdbcType="VARCHAR"/>
+		<result property="unitInfo.uniformSocialCode" column="UNIFORM_SOCIAL_CODE" jdbcType="VARCHAR"/>
+		<result property="unitInfo.unitPropType" column="UNIT_PROP_TYPE" jdbcType="VARCHAR"/>
+		<result property="unitInfo.unitPropDesc" column="UNIT_PROP_DESC" jdbcType="VARCHAR"/>
+		<result property="unitInfo.busiRegNum" column="BUSI_REG_NUM" jdbcType="VARCHAR"/>
+		<result property="unitInfo.unitEstabTime" column="UNIT_ESTAB_TIME" jdbcType="VARCHAR"/>
+        <result property="unitInfo.province" column="PROVINCE" jdbcType="VARCHAR"/>
+		<result property="unitInfo.provinceDesc" column="PROVINCE_DESC" jdbcType="VARCHAR"/>
+		<result property="unitInfo.city" column="CITY" jdbcType="VARCHAR"/>
+		<result property="unitInfo.cityDesc" column="CITY_DESC" jdbcType="VARCHAR"/>
+		<result property="unitInfo.county" column="COUNTY" jdbcType="VARCHAR"/>
+		<result property="unitInfo.countyDesc" column="COUNTY_DESC" jdbcType="VARCHAR"/>
+		<result property="unitInfo.town" column="TOWN" jdbcType="VARCHAR"/>
+		<result property="unitInfo.townDesc" column="TOWN_DESC" jdbcType="VARCHAR"/>
+		<result property="unitInfo.village" column="VILLAGE" jdbcType="VARCHAR"/>
+		<result property="unitInfo.villageDesc" column="VILLAGE_DESC" jdbcType="VARCHAR"/>
+		<result property="unitInfo.affiliateType" column="AFFILIATE_TYPE" jdbcType="VARCHAR"/>
+		<result property="unitInfo.affiliateTDesc" column="AFFILIATE_T_DESC" jdbcType="VARCHAR"/>
+		<result property="unitInfo.affiliateCategory" column="AFFILIATE_CATEGORY" jdbcType="VARCHAR"/>
+		<result property="unitInfo.affiliateCDesc" column="AFFILIATE_C_DESC" jdbcType="VARCHAR"/>
+    </resultMap>
+  
+    <sql id="selectBaseSql">
+        T1.ID, T1.NAME, T1.IDCARD, T1.SEX, T1.BIRTHDATE, T1.MOBILE_PHONE,
+        T1.NATION, T1.NATION_DESC, T1.POLITICAL, T1.POLITICAL_DESC,
+        T1.POSITIONS, T1.POSITIONAL_TITLE, T1.INSURED_STATUS, T1.PROF_SKILL,
+        T1.CRAFT, T1.EDUCATION, T1.EDUCATION_DESC, T1.REGISTER_TYPE,
+        T1.REGISTER_DESC, T1.WORK_STATUS, T1.WORK_DESC, T1.DESCRIPTION,
+        T1.UNIT_ID, T1.UNIT_NAME, T1.LAST_OPERATOR_ID, T1.UPDATE_TIME, T1.FLAG
+    </sql>
+
+    <select id="selectPageList" resultMap="Member">
+		SELECT
+       	  <include refid="selectBaseSql"/>, 
+          T2.ID AS U_UNIT_ID, T2.UNIT_NAME AS U_UNIT_NAME, T2.UNIT_ADDRESS, 
+          T2.UNIT_PHONE, T2.UNIT_POSTAL_CODE, T2.ORGANIZATION_CODE,
+		  T2.UNIFORM_SOCIAL_CODE, T2.UNIT_PROP_TYPE, T2.UNIT_PROP_DESC, 
+		  T2.BUSI_REG_NUM, T2.UNIT_ESTAB_TIME, T2.PROVINCE, T2.PROVINCE_DESC, 
+		  T2.CITY, T2.CITY_DESC, T2.COUNTY, T2.COUNTY_DESC, T2.TOWN, T2.TOWN_DESC,
+		  T2.VILLAGE, T2.VILLAGE_DESC, T2.AFFILIATE_TYPE, T2.AFFILIATE_T_DESC,
+		  T2.AFFILIATE_CATEGORY, T2.AFFILIATE_C_DESC
+		FROM A_PERSONAL_BASE T1
+        LEFT JOIN A_UNIT_INFORMATION T2 ON T2.ID = T1.UNIT_ID AND T2.FLAG != 3
+        WHERE T1.FLAG != 3 
+        <if test="searchParams !=null ">
+       		<if test="searchParams.idcard !=null and searchParams.idcard !=''">
+                AND T1.IDCARD LIKE CONCAT("%", #{searchParams.idcard, jdbcType=VARCHAR}, "%")
+            </if>
+            <if test="searchParams.name !=null and searchParams.name !=''">
+                AND T1.NAME LIKE CONCAT("%", #{searchParams.name, jdbcType=VARCHAR}, "%")
+            </if>
+            <if test="searchParams.unitName !=null and searchParams.unitName !=''">
+                AND T2.UNIT_NAME LIKE CONCAT("%", #{searchParams.unitName, jdbcType=VARCHAR}, "%")
+            </if>
+           	<if test="searchParams.province !=null and searchParams.province !=''">
+           		AND T2.PROVINCE = #{searchParams.province, jdbcType=VARCHAR}
+	        </if>
+	        <if test="searchParams.city !=null and searchParams.city !=''">
+	            AND T2.CITY = #{searchParams.city, jdbcType=VARCHAR}
+	        </if>
+	        <if test="searchParams.county !=null and searchParams.county !=''">
+	            AND T2.COUNTY = #{searchParams.county, jdbcType=VARCHAR}
+	        </if>
+        </if>
+        ORDER BY T2.PROVINCE, T2.CITY, T2.COUNTY
+        LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+    </select>
+    
+    <select id="count" resultType="java.lang.Long" parameterType="com.mass.biz.aBaseData.personal.model.Personal">
+        SELECT
+       	   COUNT(0)
+     	FROM A_PERSONAL_BASE T1
+        LEFT JOIN A_UNIT_INFORMATION T2 ON T2.ID = T1.UNIT_ID AND T2.FLAG != 3
+        WHERE T1.FLAG != 3 
+   		 <if test="idcard !=null and idcard !=''">
+             AND T1.IDCARD LIKE= CONCAT("%", #{idcard, jdbcType=VARCHAR}, "%")
+         </if>
+         <if test="name !=null and name !=''">
+             AND T1.NAME LIKE= CONCAT("%", #{name, jdbcType=VARCHAR}, "%")
+         </if>
+         <if test="unitName !=null and unitName !=''">
+             AND T2.UNIT_NAME LIKE CONCAT("%", #{unitName, jdbcType=VARCHAR}, "%")
+         </if>
+         <if test="province !=null and province !=''">
+         	 AND T2.PROVINCE = #{province, jdbcType=VARCHAR}
+      	 </if>
+       	 <if test="city !=null and city !=''">
+             AND T2.CITY = #{city, jdbcType=VARCHAR}
+         </if>
+         <if test="county !=null and county !=''">
+             AND T2.COUNTY = #{county, jdbcType=VARCHAR}
+         </if>
+    </select>
+    
+    
+	<!--     添加人员信息 -->
+    <insert id="insert" parameterType="com.mass.biz.aBaseData.personal.model.Personal" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO A_PERSONAL_BASE(
+            NAME,
+            IDCARD,
+            SEX,
+            BIRTHDATE,
+            MOBILE_PHONE,
+            NATION,
+            NATION_DESC,
+            POLITICAL,
+            POLITICAL_DESC,
+            POSITIONS,
+            POSITIONAL_TITLE,
+            INSURED_STATUS,
+            PROF_SKILL,
+            CRAFT,
+            EDUCATION,
+            EDUCATION_DESC,
+            REGISTER_TYPE,
+            REGISTER_DESC,
+            WORK_STATUS,
+            WORK_DESC,
+            DESCRIPTION,
+            UNIT_ID,
+            UNIT_NAME,
+            LAST_OPERATOR_ID,
+            UPDATE_TIME,
+            FLAG
+        )VALUES(
+            #{name, jdbcType=VARCHAR},
+            #{idcard, jdbcType=VARCHAR},
+            #{sex, jdbcType=TINYINT},
+            #{birthdate, jdbcType=VARCHAR},
+            #{mobilePhone, jdbcType=VARCHAR},
+            #{nation, jdbcType=VARCHAR},
+            #{nationDesc, jdbcType=VARCHAR},
+            #{political, jdbcType=VARCHAR},
+            #{politicalDesc, jdbcType=VARCHAR},
+            #{positions, jdbcType=VARCHAR},
+            #{positionalTitle, jdbcType=VARCHAR},
+            #{insuredStatus, jdbcType=VARCHAR},
+            #{profSkill, jdbcType=VARCHAR},
+            #{craft, jdbcType=VARCHAR},
+            #{education, jdbcType=VARCHAR},
+            #{educationDesc, jdbcType=VARCHAR},
+            #{registerType, jdbcType=VARCHAR},
+            #{registerDesc, jdbcType=VARCHAR},
+            #{workStatus, jdbcType=VARCHAR},
+            #{workDesc, jdbcType=VARCHAR},
+            #{description, jdbcType=VARCHAR},
+            #{unitId, jdbcType=BIGINT},
+            #{unitName, jdbcType=VARCHAR},
+            #{lastOperatorId, jdbcType=BIGINT},
+            NOW(), 0)
+    </insert> 
+    
+    <!--修改人员信息数据-->
+    <update id="update" parameterType="com.mass.biz.aBaseData.personal.model.Personal">
+        UPDATE A_PERSONAL_BASE
+        <set>
+       		<if test="name != null and name != ''">NAME=#{name, jdbcType=VARCHAR},</if>
+            <if test="mobilePhone != null and mobilePhone != ''">MOBILE_PHONE=#{mobilePhone, jdbcType=VARCHAR},</if>
+            <if test="nation != null and nation != ''">NATION=#{nation, jdbcType=VARCHAR},</if>
+            <if test="nationDesc != null and nationDesc != ''">NATION_DESC=#{nationDesc, jdbcType=VARCHAR},</if>
+            <if test="political != null and political != ''">POLITICAL=#{political, jdbcType=VARCHAR},</if>
+            <if test="politicalDesc != null and politicalDesc != ''">POLITICAL_DESC=#{politicalDesc, jdbcType=VARCHAR},</if>
+            <if test="positions != null and positions != ''">POSITIONS=#{positions, jdbcType=VARCHAR},</if>
+            <if test="positionalTitle != null and positionalTitle != ''">POSITIONAL_TITLE=#{positionalTitle, jdbcType=VARCHAR},</if>
+            <if test="insuredStatus != null and insuredStatus != ''">INSURED_STATUS=#{insuredStatus, jdbcType=VARCHAR},</if>
+            <if test="profSkill != null and profSkill != ''">PROF_SKILL=#{profSkill, jdbcType=VARCHAR},</if>
+            <if test="craft != null and craft != ''">CRAFT=#{craft, jdbcType=VARCHAR},</if>
+            <if test="education != null and education != ''">EDUCATION=#{education, jdbcType=VARCHAR},</if>
+            <if test="educationDesc != null and educationDesc != ''">EDUCATION_DESC=#{educationDesc, jdbcType=VARCHAR},</if>
+            <if test="registerType != null and registerType != ''">REGISTER_TYPE=#{registerType, jdbcType=VARCHAR},</if>
+            <if test="registerDesc != null and registerDesc != ''">REGISTER_DESC=#{registerDesc, jdbcType=VARCHAR},</if>
+            <if test="workStatus != null and workStatus != ''">WORK_STATUS=#{workStatus, jdbcType=VARCHAR},</if>
+            <if test="workDesc != null and workDesc != ''">WORK_DESC=#{workDesc, jdbcType=VARCHAR},</if>
+            <if test="description != null and description != ''">DESCRIPTION = #{description, jdbcType=VARCHAR},</if>
+            <if test="unitId != null">UNIT_ID=#{unitId, jdbcType=BIGINT},</if>
+            <if test="unitName != null and unitName != ''">UNIT_NAME=#{unitName, jdbcType=VARCHAR},</if>
+            LAST_OPERATOR_ID = #{lastOperatorId, jdbcType=BIGINT},
+            UPDATE_TIME=NOW()
+        </set>
+        WHERE FLAG != 3 AND ID = #{id, jdbcType=BIGINT}
+    </update>
+    
+    <select id="getEntityById" resultMap="Member">
+		SELECT
+			<include refid="selectBaseSql"/>,
+			T2.ID AS U_UNIT_ID, T2.UNIT_NAME AS U_UNIT_NAME
+		FROM A_PERSONAL_BASE T1
+		LEFT JOIN A_UNIT_INFORMATION T2 ON T1.UNIT_ID = T2.ID AND T2.FLAG != 3
+		WHERE T1.FLAG != 3 AND T1.ID = #{id,jdbcType=BIGINT}
+	</select>
+    
+    <update id="delete" parameterType="java.lang.Long">
+        UPDATE A_PERSONAL_BASE
+        SET FLAG = 3
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+</mapper>

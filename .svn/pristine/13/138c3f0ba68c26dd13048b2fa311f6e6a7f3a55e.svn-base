@@ -1,0 +1,32 @@
+package com.mass.biz.smart.joinMerchant.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.mass.biz.smart.joinMerchant.dao.SzJoinMerchantMapper;
+import com.mass.biz.smart.joinMerchant.model.SzJoinMerchant;
+import com.mass.biz.smart.joinMerchant.service.SzJoinMerchantService;
+
+@Service
+public class SzJoinMerchantServiceImpl implements SzJoinMerchantService {
+
+	@Autowired
+	SzJoinMerchantMapper szJoinMerchantMapper;
+
+	@Override
+	public int insert(SzJoinMerchant szJoinMerchant) {
+		return szJoinMerchantMapper.insert(szJoinMerchant);
+	}
+
+	@Override
+	public int update(SzJoinMerchant szJoinMerchant) {
+		return szJoinMerchantMapper.update(szJoinMerchant);
+	}
+
+	@Override
+	public List<SzJoinMerchant> selectList(SzJoinMerchant szJoinMerchant) {
+		return szJoinMerchantMapper.selectList(szJoinMerchant);
+	}
+}

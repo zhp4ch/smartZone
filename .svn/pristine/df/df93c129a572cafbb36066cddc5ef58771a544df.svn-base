@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.smart.topic.mapper.TopicMapper">
+	<resultMap id="topicModel" type="com.mass.biz.smart.topic.model.TopicModel">
+		<result property="rid" column="rid" jdbcType="BIGINT" />
+		<result property="content" column="content" jdbcType="VARCHAR" />
+		<result property="openId" column="open_id" jdbcType="VARCHAR" />
+		<result property="type" column="type" jdbcType="TINYINT" />
+		<result property="createTime" column="create_time" jdbcType="VARCHAR" />
+		<result property="isDelete" column="is_delete" jdbcType="TINYINT" />
+		<result property="isTop" column="is_top" jdbcType="TINYINT" />
+		<result property="viewCount" column="view_count" jdbcType="TINYINT" />
+		<result property="likeCount" column="like_count" jdbcType="TINYINT" />
+		<result property="picPaths" column="pic_paths" jdbcType="VARCHAR" />
+		<result property="nickName" column="nickname" jdbcType="VARCHAR" />
+		<result property="name" column="name" jdbcType="VARCHAR" />
+		<result property="headImage" column="head_image" jdbcType="VARCHAR" />
+		<result property="replyCount" column="reply_count" jdbcType="BIGINT" />
+		<result property="identification" column="identification" jdbcType="TINYINT" />
+		<result property="user_id" column="user_id" jdbcType="BIGINT" />
+		<result property="typeName" column="type_name" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="baseSql">
+		T1.rid, T1.content, T1.open_id, T1.type,T1.create_time,
+		T1.is_delete, T1.is_top, T1.view_count, T1.like_count, T1.pic_paths,T1.identification
+	</sql>
+
+	<!-- 标题 关键字 发布时间范围查询 -->
+	<select id="selectPageList" resultMap="topicModel">
+		select
+		<include refid="baseSql" />
+		,a.`name`
+		,a.nickname,a.head_image,
+		a.rid user_id,
+		 b.type_name,
+		(select count(0) count from sz_topic_reply where topic_id=T1.rid and is_delete=0) reply_count
+		from sz_topic T1
+		LEFT JOIN sz_user a
+		ON
+		T1.open_id=a.open_id
+		LEFT JOIN sz_topic_type b ON t1.type= b.rid
+		where
+		T1.is_delete=0
+		and b.del_falg =0
+		<if test="searchParams !=null ">
+			<if test="searchParams.name !=null and searchParams.name !=''">
+				AND a.name LIKE CONCAT("%", #{searchParams.name,
+				jdbcType=VARCHAR},
+				"%")
+			</if>
+			<if test="searchParams.content !=null and searchParams.content !=''">
+				AND T1.content LIKE CONCAT("%", #{searchParams.content,
+				jdbcType=VARCHAR}, "%")
+			</if>
+			<if test="searchParams.createTime !=null and searchParams.createTime !=''">
+				AND T1.create_time LIKE CONCAT("%",
+				#{searchParams.createTime,
+				jdbcType=VARCHAR}, "%")
+			</if>
+			<if test="searchParams.type !=null and searchParams.type !=''">
+				AND T1.type =#{searchParams.type,jdbcType=TINYINT}
+			</if>
+			<if test="searchParams.openId !=null and searchParams.openId !=''">
+				AND T1.open_id =#{searchParams.openId,jdbcType=VARCHAR}
+			</if>
+		</if>
+		ORDER BY T1.create_time desc
+		LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+	</select>
+
+	<select id="count" resultType="java.lang.Long"
+		parameterType="com.mass.biz.smart.topic.model.TopicModel">
+		SELECT COUNT(0)
+		FROM sz_topic T1
+		LEFT JOIN sz_user a ON
+		T1.open_id=a.open_id
+		LEFT JOIN sz_topic_type b ON t1.type= b.rid
+		where T1.is_delete=0
+		and b.del_falg =0
+		<if test="name !=null and name !=null">
+			AND a.name LIKE CONCAT("%", #{name, jdbcType=VARCHAR},
+			"%")
+		</if>
+		<if test="content !=null and content !=''">
+			AND T1.content LIKE CONCAT("%", #{content,
+			jdbcType=VARCHAR}, "%")
+		</if>
+		<if test="createTime !=null and createTime !=''">
+			AND T1.create_time LIKE CONCAT("%", #{createTime,
+			jdbcType=VARCHAR},
+			"%")
+		</if>
+		<if test="type !=null and type !=''">
+				AND T1.type =#{type,jdbcType=TINYINT}
+		</if>
+		<if test="openId !=null and openId !=''">
+				AND T1.open_id =#{openId,jdbcType=VARCHAR}
+			</if>
+		ORDER BY T1.create_time desc
+	</select>
+
+	<update id="delete" parameterType="java.lang.Long">
+		UPDATE sz_topic
+		SET is_delete = 1
+		WHERE rid = #{rid,jdbcType=BIGINT}
+	</update>
+
+	<!--根据rid查询 -->
+	<select id="getEntityId" resultMap="topicModel">
+		SELECT
+		<include refid="baseSql" />
+		,
+		a.`name`,a.nickname,a.head_image,
+		a.rid user_id,
+		 b.type_name
+		from sz_topic T1
+		LEFT JOIN sz_user a
+		ON
+		T1.open_id=a.open_id
+		LEFT JOIN sz_topic_type b ON t1.type= b.rid
+		where T1.rid=#{rid,jdbcType=BIGINT}
+		and T1.is_delete=0
+	</select>
+
+	<!-- 浏览计数自增 -->
+	<update id="updateViewCount">
+		UPDATE sz_topic
+		SET view_count = view_count+1
+		WHERE rid = #{rid, jdbcType=BIGINT}
+	</update>
+	
+	 <insert id="insert" useGeneratedKeys="true" keyProperty="rid"
+     parameterType="com.mass.biz.smart.topic.model.TopicModel">
+        INSERT INTO sz_topic(
+	        content, open_id, type, create_time,pic_paths,identification)
+     	VALUES (
+	        #{content,jdbcType=VARCHAR},
+	        #{openId,jdbcType=VARCHAR},
+	        #{type,jdbcType=TINYINT},
+	         NOW(),
+	        #{picPaths,jdbcType=VARCHAR},
+	         #{identification,jdbcType=TINYINT}
+	        )
+    </insert>
+
+</mapper>

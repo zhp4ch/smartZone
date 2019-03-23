@@ -1,0 +1,149 @@
+package com.mass.biz.smart.merchant.service.impl;
+
+import com.mass.biz.smart.merchant.dao.SzMerchantMapper;
+import com.mass.biz.smart.merchant.model.SzMerchant;
+import com.mass.biz.smart.merchant.service.SzMerchantService;
+import com.mass.core.sys.file.service.FileUploadService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @ClassName 商户入驻
+ * @Author 郑上进
+ * @Date 2018/7/17 14:57
+ * @Version 1.0
+ **/
+@Service
+public class SzMerchantServiceImpl implements SzMerchantService {
+
+    @Autowired
+    private SzMerchantMapper szMerchantMapper;
+
+    /*流程管理*/
+
+    /**
+     * 根据id查询
+     *
+     * @Author 郑上进
+     * @Date 15:32 2018/7/17
+     **/
+    @Override
+    public SzMerchant getFlowById(Long id) {
+        return this.szMerchantMapper.getFlowById(id);
+    }
+
+    /**
+     * 修改流程
+     *
+     * @Author 郑上进
+     * @Date 15:31 2018/7/17
+     **/
+    @Override
+    public boolean updateFlow(SzMerchant szMerchant) {
+        return 0 < this.szMerchantMapper.updateFlow(szMerchant);
+    }
+
+    /*入驻管理*/
+
+    /**
+     * 分页列表查询
+     *
+     * @Author 郑上进
+     * @Date 15:29 2018/7/17
+     **/
+    @Override
+    public List<SzMerchant> selectPageList(SzMerchant szMerchant, Integer pageIndex, Integer pageSize) {
+        List<SzMerchant> list = szMerchantMapper.selectPageList(szMerchant, pageIndex, pageSize);
+        return list;
+    }
+
+    /**
+     * 新增一条数据-用户申请
+     *
+     * @Author 郑上进
+     * @Date 15:31 2018/7/17
+     **/
+    @Override
+    public SzMerchant addEntity(SzMerchant szMerchant) {
+        boolean b = 0 < this.szMerchantMapper.insert(szMerchant);
+        return b ? szMerchant : null;
+    }
+
+    /**
+     * 修改一条数据(审核)
+     *
+     * @Author 郑上进
+     * @Date 15:31 2018/7/17
+     **/
+    @Override
+    public boolean editEntity(SzMerchant szMerchant) {
+        return 0 < this.szMerchantMapper.update(szMerchant);
+    }
+
+    /**
+     * 根据id查询一条数据
+     *
+     * @Author 郑上进
+     * @Date 15:32 2018/7/17
+     **/
+    @Override
+    public SzMerchant getEntityById(Long id) {
+         return this.szMerchantMapper.getEntityById(id);
+
+    }
+
+    /**
+     * 删除一条数据
+     *
+     * @Author 郑上进
+     * @Date 15:31 2018/7/17
+     **/
+    @Override
+    public boolean deleteEntity(Long id) {
+        return 0 < this.szMerchantMapper.delete(id);
+    }
+
+    /**
+     * 查询总条数
+     *
+     * @Author 郑上进
+     * @Date 15:34 2018/7/18
+     **/
+    @Override
+    public long count(SzMerchant szMerchant) {
+        return this.szMerchantMapper.count(szMerchant);
+    }
+
+	@Override
+	public  List<Object> selectCount() {
+		// TODO Auto-generated method stub
+		return szMerchantMapper.selectCount();
+	}
+
+	@Override
+	public List<SzMerchant> selectByCondition(SzMerchant szMerchant) {
+		return szMerchantMapper.selectByCondition(szMerchant);
+	}
+
+	@Override
+	public SzMerchant getEntityByCode(String merchant_code) {
+		return szMerchantMapper.getEntityByCode(merchant_code);
+	}
+
+	@Override
+	public SzMerchant getEntityByUserid(Long user_id) {
+		return szMerchantMapper.getEntityByUserid(user_id);
+	}
+
+	@Override
+	public List<SzMerchant> merchantList() {
+		 List<SzMerchant> list = szMerchantMapper.merchantList();
+		 return list;
+	}
+	
+	
+
+}

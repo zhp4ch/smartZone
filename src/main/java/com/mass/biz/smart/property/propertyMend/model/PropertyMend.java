@@ -1,0 +1,204 @@
+package com.mass.biz.smart.property.propertyMend.model; 
+
+
+/**
+ *
+ * 项目名称：smartZone-ht
+ * 类名称：propertyMend
+ * 类描述：物业报修实体
+ * 创建人：yihai Zhao
+ * 创建时间：2018年7月24日 上午11:22:13
+ * 修改人：yihai Zhao
+ * 修改时间：2018年7月24日 上午11:22:13
+ * 
+ * @version
+ *
+ */
+public class PropertyMend {
+
+	private Long id;
+	
+	private Long rid;						//外键
+	
+	private Integer propertyMendState;		//报修类型  0-水电 1-煤气 2-安防 3-其他
+	
+	private String propertyMendAddress;		//报修地点
+	
+	private String propertyMendContent;		//报修描述
+	
+	private String propertyMendImage;		//报修问题图片
+	
+	private String evaluate;				//评价
+	
+	private Integer state;					//状态 0-待处理 1-处理中 2-已完工待反馈 3-商户反馈 4- 监管人员反馈  5-确认完成
+	
+	private Integer status;					//区分 评价反馈人员身份，0-商户 1-监管人员',
+		
+	private String createTime;				//创建时间
+	
+	private String endTime;					//完工时间
+	
+	private Integer delFlag;				//删除标记
+	
+	//关联查询接收字段
+	private String name;
+	
+	private String idCode;
+	
+	private String phone;
+	
+	//时间范围查询控件字段
+	private String createTimeAfter;
+	
+	private String createTimeBefore;
+	
+	private String msg;						//消息内容
+
+	
+	
+	public String getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(String endTime) {
+		this.endTime = endTime;
+	}
+
+	public String getPropertyMendAddress() {
+		return propertyMendAddress;
+	}
+
+	public void setPropertyMendAddress(String propertyMendAddress) {
+		this.propertyMendAddress = propertyMendAddress;
+	}
+
+	public Integer getStatus() {
+		return status;
+	}
+
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
+
+	public String getCreateTimeAfter() {
+		return createTimeAfter;
+	}
+
+	public void setCreateTimeAfter(String createTimeAfter) {
+		this.createTimeAfter = createTimeAfter;
+	}
+
+	public String getCreateTimeBefore() {
+		return createTimeBefore;
+	}
+
+	public void setCreateTimeBefore(String createTimeBefore) {
+		this.createTimeBefore = createTimeBefore;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getIdCode() {
+		return idCode;
+	}
+
+	public void setIdCode(String idCode) {
+		this.idCode = idCode;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Long getRid() {
+		return rid;
+	}
+
+	public void setRid(Long rid) {
+		this.rid = rid;
+	}
+
+	public Integer getPropertyMendState() {
+		return propertyMendState;
+	}
+
+	public void setPropertyMendState(Integer propertyMendState) {
+		this.propertyMendState = propertyMendState;
+	}
+
+	public String getPropertyMendContent() {
+		return propertyMendContent;
+	}
+
+	public void setPropertyMendContent(String propertyMendContent) {
+		this.propertyMendContent = propertyMendContent;
+	}
+
+	public String getPropertyMendImage() {
+		return propertyMendImage;
+	}
+
+	public void setPropertyMendImage(String propertyMendImage) {
+		this.propertyMendImage = propertyMendImage;
+	}
+
+	public String getEvaluate() {
+		return evaluate;
+	}
+
+	public void setEvaluate(String evaluate) {
+		this.evaluate = evaluate;
+	}
+
+	public Integer getState() {
+		return state;
+	}
+
+	public void setState(Integer state) {
+		this.state = state;
+	}
+
+	public String getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(String createTime) {
+		this.createTime = createTime;
+	}
+
+	public Integer getDelFlag() {
+		return delFlag;
+	}
+
+	public void setDelFlag(Integer delFlag) {
+		this.delFlag = delFlag;
+	}
+
+	public String getMsg() {
+		return msg;
+	}
+
+	public void setMsg(String msg) {
+		this.msg = msg;
+	}
+	
+	
+}

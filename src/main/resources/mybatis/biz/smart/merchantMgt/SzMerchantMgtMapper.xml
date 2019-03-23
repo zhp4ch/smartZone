@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.smart.merchantMgt.dao.SzMerchantMgtMapper">
+	<resultMap id="szMerchantMgt" type="com.mass.biz.smart.merchantMgt.model.SzMerchantMgt">
+		<result column="ID" property="id" jdbcType="BIGINT"/>
+        <result column="USER_ID" property="userId" jdbcType="BIGINT"/>
+        <result column="USER_NAME" property="userName" jdbcType="VARCHAR"/>
+        <result column="REPRESENTATIVE_NAME" property="representativeName" jdbcType="VARCHAR"/>
+        <result column="CORPORATE_NAME" property="corporateName" jdbcType="VARCHAR"/>
+        <result column="EXAMINE_ID" property="examineId" jdbcType="BIGINT"/>
+        <result column="EXAMINE_NAME" property="examineName" jdbcType="VARCHAR"/>
+        <result column="EXAMINE_STATE" property="examineState" jdbcType="BIGINT"/>
+        <result column="EXAMINE_CONTENT" property="examineContent" jdbcType="VARCHAR"/>
+        <result column="MERCHANT_STATE" property="merchantState" jdbcType="BIGINT"/>
+        <result column="FLOW_PICTURE_URL" property="flowPictureUrl" jdbcType="VARCHAR"/>
+        <result column="APTITUDE_PICTURE_URL" property="aptitudePictureUrl" jdbcType="VARCHAR"/>
+        <result column="CONTRACT_PICTURE_URL" property="contractPictureUrl" jdbcType="VARCHAR"/>
+        <result column="PAY_PICTURE_URL" property="payPictureUrl" jdbcType="VARCHAR"/>
+        <result column="FILEINFO_ID" property="fileInfoId" jdbcType="BIGINT"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="DEL_FLAG" property="delFlag" jdbcType="BIGINT"/>
+        <result column="PAY_PICTURE_URL" property="payPictureUrl" jdbcType="VARCHAR"/>
+        <result column="PAY_PICTURE_URL" property="payPictureUrl" jdbcType="VARCHAR"/>
+        <result column="EXAMINE_OK_TIME" property="examineOkTime" jdbcType="VARCHAR"/>
+        <result column="CORPORATE_ADDRESS" property="corporateAddress" jdbcType="VARCHAR"/>
+        <result column="DOOR_NUMBER" property="doorNumber" jdbcType="VARCHAR"/>
+        <result column="PARK" property="park" jdbcType="VARCHAR"/>
+        <result column="ABBREVIATION" property="abbreviation" jdbcType="VARCHAR"/>
+        <result column="MERCHANT_CODE" property="merchant_code" jdbcType="VARCHAR"/>
+        <result column="BUILDING_NUMBER" property="building_number" jdbcType="VARCHAR"/>
+         <result column="USER_PHONE" property="user_phone" jdbcType="VARCHAR"/>
+        
+        
+	</resultMap>
+	
+	
+    <sql id="baseSql">
+        T1.ID, T1.USER_ID, T1.REPRESENTATIVE_NAME, T1.CORPORATE_NAME, T1.CORPORATE_ADDRESS,
+        T1.DOOR_NUMBER, T1.EXAMINE_ID, T1.EXAMINE_STATE, T1.MERCHANT_STATE, T1.EXAMINE_CONTENT,
+        T1.APTITUDE_PICTURE_URL, T1.CONTRACT_PICTURE_URL, T1.PAY_PICTURE_URL, T1.FILEINFO_ID,
+        T1.CREATE_TIME, T1.EXAMINE_OK_TIME, T1.DEL_FLAG, T1.PARK, T1.ABBREVIATION,T1.MERCHANT_CODE,T1.BUILDING_NUMBER
+    </sql>
+	
+	    <!-- 审核管理分页查询及总数 -->
+    <select id="selectPageList" resultMap="szMerchantMgt">
+        SELECT
+        <include refid="baseSql"/>,
+        T2.NAME AS USER_NAME,T3.NAME AS EXAMINE_NAME,T2.phone USER_PHONE
+        FROM
+        sz_merchant T1
+        LEFT JOIN sz_user T2 ON T1.USER_ID = T2.RID
+        LEFT JOIN t_sys_user T3 ON T1.EXAMINE_ID = T3.ID
+        WHERE
+        T1.DEL_FLAG = 0
+        <if test="searchParams !=null ">
+
+            <if test="searchParams.corporateName !=null and searchParams.corporateName !=''">
+                AND T1.CORPORATE_NAME LIKE CONCAT("%", #{searchParams.corporateName, jdbcType=VARCHAR}, "%")
+            </if>
+
+            <if test="searchParams.representativeName !=null and searchParams.representativeName !=''">
+                AND T1.REPRESENTATIVE_NAME LIKE CONCAT("%", #{searchParams.representativeName, jdbcType=VARCHAR}, "%")
+            </if>
+     		<!--        
+     		<if test="searchParams.examineState != null and searchParams.examineState == 0">
+                AND T1.EXAMINE_STATE = #{searchParams.examineState, jdbcType=TINYINT}
+            </if>
+            <if test="searchParams.examineState != null and searchParams.examineState != 0">
+                AND T1.EXAMINE_STATE = 1 or T1.EXAMINE_STATE = 2 
+            </if> 
+            -->
+            
+            <if test="searchParams.examineState != null">
+                AND T1.EXAMINE_STATE = #{searchParams.examineState, jdbcType=TINYINT}
+            </if>
+            
+            <if test="searchParams.timeBefore != null and searchParams.timeBefore !='' ">
+				AND <![CDATA[SUBSTR(T1.EXAMINE_OK_TIME,1,10) >=  DATE_FORMAT(#{searchParams.timeBefore},'%Y-%m-%d')]]>
+			</if>
+			<if test="searchParams.timeAfter != null and searchParams.timeAfter !='' ">
+			 	AND  <![CDATA[SUBSTR(T1.EXAMINE_OK_TIME,1,10) <=  DATE_FORMAT(#{searchParams.timeAfter},'%Y-%m-%d')]]>
+			</if>
+           
+
+        </if>
+        ORDER BY T1.EXAMINE_OK_TIME DESC,T1.CREATE_TIME DESC
+        LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+    </select>
+    <select id="count" resultType="java.lang.Long" parameterType="com.mass.biz.smart.merchantMgt.model.SzMerchantMgt">
+        SELECT
+        COUNT(0)
+        FROM
+        sz_merchant T1
+        WHERE
+        T1.DEL_FLAG=0
+
+        <if test="corporateName !=null and corporateName !=''">
+            AND T1.CORPORATE_NAME LIKE CONCAT("%", #{corporateName, jdbcType=VARCHAR}, "%")
+        </if>
+
+        <if test="representativeName !=null and representativeName !=''">
+            AND T1.REPRESENTATIVE_NAME LIKE CONCAT("%", #{representativeName, jdbcType=VARCHAR}, "%")
+        </if>
+<!-- 
+        <if test="examineState !=null  and examineState == 0">
+            AND T1.EXAMINE_STATE = #{examineState, jdbcType=TINYINT}
+        </if>
+        <if test="examineState != null and examineState != 0">
+           AND T1.EXAMINE_STATE = 1 or T1.EXAMINE_STATE = 2 
+        </if>
+ -->
+  		<if test="examineState !=null">
+            AND T1.EXAMINE_STATE = #{examineState, jdbcType=TINYINT}
+        </if>
+        
+        <if test="timeBefore != null and timeBefore !='' ">
+			AND <![CDATA[SUBSTR(T1.EXAMINE_OK_TIME,1,10) >= DATE_FORMAT(#{timeBefore},'%Y-%m-%d')]]>
+		</if>
+		<if test="timeAfter != null and timeAfter !='' ">
+		 	AND  <![CDATA[SUBSTR(T1.EXAMINE_OK_TIME,1,10) <= DATE_FORMAT(#{timeAfter},'%Y-%m-%d')]]>
+		</if>
+    </select>
+    
+    <!-- 注：审核状态，默认1-“已通过” -->
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+   
+	    INSERT INTO sz_merchant(
+            REPRESENTATIVE_NAME,
+            CORPORATE_NAME,
+            CORPORATE_ADDRESS,
+            DOOR_NUMBER,
+            BUILDING_NUMBER,
+            PARK,
+            MERCHANT_STATE,
+            CREATE_TIME,
+            DEL_FLAG,
+            ABBREVIATION,
+            MERCHANT_CODE,
+            EXAMINE_ID,
+            EXAMINE_STATE,
+            EXAMINE_CONTENT,
+            EXAMINE_OK_TIME
+		)
+     	VALUES 
+       <foreach collection="list" item="item" index="index" separator="," > 
+       		(
+            #{item.representativeName,jdbcType=VARCHAR},
+            #{item.corporateName,jdbcType=VARCHAR},
+            #{item.corporateAddress,jdbcType=VARCHAR},
+            #{item.doorNumber,jdbcType=VARCHAR},
+            #{item.building_number,jdbcType=VARCHAR},
+            #{item.park,jdbcType=VARCHAR},
+            1,
+            NOW(),
+            0,
+            #{item.abbreviation,jdbcType=VARCHAR},
+            #{item.merchant_code,jdbcType=VARCHAR},
+            #{item.examineId,jdbcType=BIGINT},
+            1,
+            #{item.examineContent,jdbcType=VARCHAR},
+            NOW()
+	        )
+       </foreach> 
+	</insert>
+
+
+    <update id="update" parameterType="com.mass.biz.smart.merchantMgt.model.SzMerchantMgt">
+        UPDATE sz_merchant
+        <set>
+        <if test="representativeName !=null and representativeName !=''">REPRESENTATIVE_NAME=#{representativeName,jdbcType=VARCHAR},</if>
+        <if test="abbreviation !=null and abbreviation !=''">ABBREVIATION=#{abbreviation,jdbcType=VARCHAR},</if>
+        <if test="park !=null and park !=''">PARK=#{park,jdbcType=VARCHAR},</if>
+        <if test="building_number !=null and building_number !=''">BUILDING_NUMBER=#{examineId,jdbcType=VARCHAR},</if>
+        <if test="doorNumber !=null and doorNumber !=''">DOOR_NUMBER=#{doorNumber,jdbcType=VARCHAR},</if>
+        <if test="corporateAddress !=null and corporateAddress !=''">CORPORATE_ADDRESS=#{corporateAddress,jdbcType=VARCHAR},</if>
+        
+           <if test="examineId !=null and examineId !=''">EXAMINE_ID=#{examineId,jdbcType=BIGINT},</if>
+           <if test="userId !=null and userId !=''">USER_ID=#{userId,jdbcType=BIGINT},</if>
+        </set>
+        WHERE ID=#{id,jdbcType=BIGINT}
+    </update>
+    
+    <!--  -->
+    <select id="countByDoorNumber" resultType="java.lang.Long" parameterType="com.mass.biz.smart.merchantMgt.model.SzMerchantMgt">
+        SELECT
+        COUNT(0)
+        FROM
+        sz_merchant T1
+        WHERE
+        T1.DEL_FLAG=0 AND T1.EXAMINE_STATE=0 or T1.EXAMINE_STATE = 1
+
+        <if test="park !=null and park !=''">
+            AND T1.park  = #{park, jdbcType=VARCHAR}
+        </if>
+
+        <if test="doorNumber !=null and doorNumber !=''">
+            AND T1.DOOR_NUMBER = #{doorNumber, jdbcType=VARCHAR}
+        </if>
+
+        <if test="building_number !=null">
+            AND T1.BUILDING_NUMBER = #{building_number, jdbcType=TINYINT}
+        </if>
+
+    </select>
+    
+    
+    <select id="countByMerchantcode" resultType="java.lang.Long" parameterType="com.mass.biz.smart.merchantMgt.model.SzMerchantMgt">
+        SELECT
+        COUNT(0)
+        FROM
+        sz_merchant T1
+        WHERE
+        T1.DEL_FLAG=0 AND T1.EXAMINE_STATE=0 or T1.EXAMINE_STATE = 1
+
+        <if test="merchant_code !=null and merchant_code !=''">
+            AND T1.merchant_code  = #{merchant_code, jdbcType=VARCHAR}
+        </if>
+    </select>
+    
+    <select id="selectMerchantcodeByName" resultMap="szMerchantMgt">
+        SELECT
+        MERCHANT_CODE
+        FROM
+        sz_merchant T1
+        WHERE
+        T1.DEL_FLAG=0 AND T1.MERCHANT_STATE=1 and T1.EXAMINE_STATE = 1
+
+        <if test="corporateName !=null and corporateName !=''">
+            AND T1.CORPORATE_NAME  = #{corporateName, jdbcType=VARCHAR}
+        </if>
+        order by CREATE_TIME desc
+    </select>
+
+</mapper>

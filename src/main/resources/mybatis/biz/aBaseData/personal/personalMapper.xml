@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.aBaseData.personal.dao.PersonalMapper">
+    <resultMap id="personal" type="com.mass.biz.aBaseData.personal.model.Personal">
+    	<result property="id" column="ID" jdbcType="BIGINT"/>
+		<result property="employyeeCode" column="EMPLOYYEE_CODE" jdbcType="VARCHAR"/>
+		<result property="name" column="NAME" jdbcType="VARCHAR"/>
+		<result property="brforeName" column="BEFORE_NAME" jdbcType="VARCHAR"/>
+		<result property="idcard" column="IDCARD" jdbcType="VARCHAR"/>
+		<result property="sex" column="SEX" jdbcType="TINYINT"/>
+		<result property="photoUrl" column="PHOTO_URL" jdbcType="VARCHAR"/>
+		<result property="birthdate" column="BIRTHDATE" jdbcType="VARCHAR"/>
+		<result property="nation" column="NATION" jdbcType="VARCHAR"/>
+		<result property="nationDesc" column="NATION_DESC" jdbcType="VARCHAR"/>
+		<result property="modelWorkerType" column="MODEL_WORKER_TYPE" jdbcType="VARCHAR"/>
+		<result property="modelWorkerDesc" column="MODEL_WORKER_DESC" jdbcType="VARCHAR"/>
+		<result property="political" column="POLITICAL" jdbcType="VARCHAR"/>
+		<result property="politicalDesc" column="POLITICAL_DESC" jdbcType="VARCHAR"/>
+		<result property="craft" column="CRAFT" jdbcType="VARCHAR"/>
+		<result property="profSkill" column="PROF_SKILL" jdbcType="VARCHAR"/>
+		<result property="insuredStatus" column="INSURED_STATUS" jdbcType="VARCHAR"/>
+		<result property="positionalTitle" column="POSITIONAL_TITLE" jdbcType="VARCHAR"/>
+		<result property="positions" column="POSITIONS" jdbcType="VARCHAR"/>
+		<result property="isSocialInsurance" column="IS_SOCIAL_INSURANCE" jdbcType="TINYINT"/>
+		<result property="isMedicalInsurance" column="IS_MEDICAL_INSURANCE" jdbcType="TINYINT"/>
+		<result property="healthStatus" column="HEALTH_STATUS" jdbcType="VARCHAR"/>
+		<result property="healthDesc" column="HEALTH_DESC" jdbcType="VARCHAR"/>
+		<result property="disabilityType" column="DISABILITY_TYPE" jdbcType="VARCHAR"/>
+		<result property="disabilityDesc" column="DISABILITY_DESC" jdbcType="VARCHAR"/>
+		<result property="marriageStatus" column="MARRIAGE_STATUS" jdbcType="VARCHAR"/>
+		<result property="marriageDesc" column="MARRIAGE_DESC" jdbcType="VARCHAR"/>
+		<result property="identity" column="IDENTITY" jdbcType="VARCHAR"/>
+		<result property="identityDesc" column="IDENTITY_DESC" jdbcType="VARCHAR"/>
+		<result property="school" column="SCHOOL" jdbcType="VARCHAR"/>
+		<result property="education" column="EDUCATION" jdbcType="VARCHAR"/>
+		<result property="educationDesc" column="EDUCATION_DESC" jdbcType="VARCHAR"/>
+		<result property="enrollmentTime" column="ENROLLMENT_TIME" jdbcType="VARCHAR"/>
+		<result property="laborOrJoinTime" column="LABOR_OR_JOIN_TIME" jdbcType="VARCHAR"/>
+		<result property="laborDueTime" column="LABOR_DUE_TIME" jdbcType="VARCHAR"/>
+		<result property="laborDueTimeDesc" column="LABOR_DUE_TIME_DESC" jdbcType="VARCHAR"/>
+		<result property="workStatus" column="WORK_STATUS" jdbcType="VARCHAR"/>
+		<result property="workDesc" column="WORK_DESC" jdbcType="VARCHAR"/>
+		<result property="workTime" column="WORK_TIME" jdbcType="VARCHAR"/>
+		<result property="homeType" column="HOME_TYPE" jdbcType="VARCHAR"/>
+		<result property="homeDesc" column="HOME_DESC" jdbcType="VARCHAR"/>
+		<result property="homeArea" column="HOME_AREA" jdbcType="VARCHAR"/>
+		<result property="homeAreaDesc" column="HOME_AREA_DESC" jdbcType="VARCHAR"/>
+		<result property="homeAddress" column="HOME_ADDRESS" jdbcType="VARCHAR"/>
+		<result property="isSingleParent" column="IS_SINGLE_PARENT" jdbcType="TINYINT"/>
+		<result property="mobilePhone" column="MOBILE_PHONE" jdbcType="VARCHAR"/>
+		<result property="otherPhone" column="OTHER_PHONE" jdbcType="VARCHAR"/>
+		<result property="belongIndustries" column="BELONG_INDUSTRIES" jdbcType="VARCHAR"/>
+		<result property="belongIndustriesDesc" column="BELONG_INDUSTRIES_DESC" jdbcType="VARCHAR"/>
+		<result property="description" column="DESCRIPTION" jdbcType="VARCHAR"/>
+		<result property="registerType" column="REGISTER_TYPE" jdbcType="VARCHAR"/>
+		<result property="registerDesc" column="REGISTER_DESC" jdbcType="VARCHAR"/>
+		<result property="registerRegion" column="REGISTER_REGION" jdbcType="VARCHAR"/>
+		<result property="myMonthIncome" column="MY_MONTH_INCOME" jdbcType="VARCHAR"/>
+		<result property="isModel" column="IS_MODEL" jdbcType="TINYINT"/>
+		<result property="isDifficult" column="IS_DIFFICULT" jdbcType="TINYINT"/>
+		<result property="isJobless" column="IS_JOBLESS" jdbcType="TINYINT"/>
+		<result property="unionId" column="UNION_ID" jdbcType="BIGINT"/>
+		<result property="unionName" column="UNION_NAME" jdbcType="VARCHAR"/>
+		<result property="unitId" column="UNIT_ID" jdbcType="BIGINT"/>
+		<result property="unitName" column="UNIT_NAME" jdbcType="VARCHAR"/>
+		<result property="parentId" column="PARENT_ID" jdbcType="BIGINT"/>
+		<result property="lastOperatorId" column="LAST_OPERATOR_ID" jdbcType="BIGINT"/>
+		<result property="flag" column="FLAG" jdbcType="TINYINT"/>
+		<result property="updateTime" column="UPDATE_TIME" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    
+    <sql id="BasesqlA" >
+		A.ID, A.EMPLOYYEE_CODE, A.NAME, A.BEFORE_NAME, A.IDCARD, A.SEX, A.PHOTO_URL,
+	    A.BIRTHDATE, A.NATION, A.NATION_DESC, A.MODEL_WORKER_TYPE, A.MODEL_WORKER_DESC,
+	    A.POLITICAL, A.POLITICAL_DESC, A.CRAFT, A.PROF_SKILL, A.INSURED_STATUS, A.POSITIONAL_TITLE,
+	    A.POSITIONS, A.IS_SOCIAL_INSURANCE, A.IS_MEDICAL_INSURANCE, A.HEALTH_STATUS, A.HEALTH_DESC,
+	    A.DISABILITY_TYPE, A.DISABILITY_DESC, A.MARRIAGE_STATUS, A.MARRIAGE_DESC, A.IDENTITY,
+		A.IDENTITY_DESC, A.SCHOOL, A.EDUCATION, A.EDUCATION_DESC, A.ENROLLMENT_TIME, A.LABOR_OR_JOIN_TIME,
+		A.LABOR_DUE_TIME, A.LABOR_DUE_TIME_DESC, A.WORK_STATUS, A.WORK_DESC, A.WORK_TIME, A.HOME_TYPE, 
+		A.HOME_DESC, A.HOME_AREA, A.HOME_AREA_DESC, A.HOME_ADDRESS, A.IS_SINGLE_PARENT, A.MOBILE_PHONE, 
+		A.OTHER_PHONE, A.BELONG_INDUSTRIES, A.BELONG_INDUSTRIES_DESC, A.DESCRIPTION, A.REGISTER_TYPE,
+	    A.REGISTER_DESC, A.REGISTER_REGION, A.MY_MONTH_INCOME, A.IS_MODEL, A.IS_DIFFICULT, A.IS_JOBLESS, 
+	    A.UNION_ID, A.UNION_NAME, A.UNIT_ID, A.UNIT_NAME, A.PARENT_ID, A.LAST_OPERATOR_ID, A.FLAG,
+	    A.UPDATE_TIME
+    </sql>
+    
+    <!-- 根据身份证号查询人员基础信息 -->
+	<select id="getEntityByIdcard" resultMap="personal">
+		SELECT 
+			<include refid="BasesqlA" />
+        FROM A_PERSONAL_BASE A
+        WHERE A.FLAG != 3 AND A.IDCARD = #{idcard, jdbcType=VARCHAR}
+    </select>
+    
+     <!-- 根据id查询人员基础信息 -->
+    <select id="getEntityById" resultMap="personal">
+    	SELECT 
+			<include refid="BasesqlA" />
+		FROM A_PERSONAL_BASE A
+        WHERE A.FLAG != 3 AND A.ID = #{id, jdbcType=VARCHAR}
+    </select>
+    
+     <!-- 根据parentId查询某职工的家庭成员信息 -->
+	<select id="getEntityByParentId" resultMap="personal">
+		SELECT 
+			<include refid="BasesqlA" />
+		FROM A_PERSONAL_BASE A
+        WHERE A.FLAG != 3 AND A.PARENT_ID = #{parentId, jdbcType=BIGINT}
+    </select>
+
+    <select id="getPersonalCount" resultType="java.lang.Long">
+        SELECT 
+        	COUNT(0)
+        FROM A_PERSONAL_BASE
+        WHERE FLAG != 3
+        <if test="i != null">
+           <if test="i == 0">AND (IS_DIFFICULT = 0)</if>
+           <if test="i == 1">AND (IS_DIFFICULT = 1)</if>
+        </if>
+    </select>
+
+    <select id="getPersonalCountByDate" resultType="java.lang.Long">
+        SELECT
+        	COUNT(0)
+        FROM A_PERSONAL_BASE
+        WHERE FLAG != 3
+        <if test="i != null">
+            <if test="i == 0">AND (IS_DIFFICULT = 0)</if>
+            <if test="i == 1">AND (IS_DIFFICULT = 1)</if>
+        </if>
+        <if test="date != null">
+            AND YEAR(UPDATE_TIME) = YEAR(#{date,jdbcType=TIMESTAMP})
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,37 @@
+package com.mass.biz.smart.user.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.mass.biz.smart.user.model.SzUser;
+import com.mass.core.sys.file.model.FileInfoTemp;
+
+public interface SzUserService {
+
+	List<SzUser> selectPageList(SzUser szUser, Integer pageIndex, Integer pageSize);
+
+	Long count(SzUser szUser);
+
+	boolean insert(SzUser szUser);
+
+	boolean delete(long rid, long delFlag);
+
+	boolean update(SzUser szUser);
+
+	SzUser getEntityById(long rid);
+
+	SzUser getEntityByOpendId(String openId);
+
+	Long countByIdCode(SzUser szUser);
+
+	int batchInsert(List<SzUser> szUserList);
+
+	int updateBatch(List<SzUser> list);
+	
+	List<SzUser> selectListByCondition(SzUser szUser);
+	
+	SzUser getEntityByIdCard(String id_code);
+	
+	boolean validManager(SzUser szUser);
+
+}

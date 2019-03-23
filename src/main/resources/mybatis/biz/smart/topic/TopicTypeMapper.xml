@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.smart.topic.mapper.TopicTypeMapper">
+	<resultMap id="topicType" type="com.mass.biz.smart.topic.model.TopicType">
+		<result property="rid" column="rid" jdbcType="BIGINT" />
+		<result property="typeName" column="type_name" jdbcType="VARCHAR" />
+		<result property="createTime" column="create_time" jdbcType="VARCHAR" />
+		<result property="updateTime" column="update_time" jdbcType="VARCHAR" />
+		<result property="delFalg" column="del_falg" jdbcType="TINYINT" />
+		<result property="describeType" column="describe_type" jdbcType="VARCHAR" />
+
+	</resultMap>
+
+	<sql id="baseSql">
+		T1.rid, T1.type_name, T1.create_time, T1.update_time,T1.del_falg,T1.describe_type
+	</sql>
+
+	<!-- 标题 关键字 发布时间范围查询 -->
+	<select id="selectPageList" resultMap="topicType">
+		select
+		<include refid="baseSql" />
+		 from sz_topic_type T1
+		where T1.del_falg=0
+		<if test="searchParams !=null ">
+			<if test="searchParams.typeName !=null and searchParams.typeName !=''">
+				AND T1.type_name LIKE CONCAT("%", #{searchParams.typeName,
+				jdbcType=VARCHAR},
+				"%")
+			</if>
+		</if>
+		ORDER BY T1.create_time desc
+		LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+	</select>
+
+	<select id="count" resultType="java.lang.Long"
+		parameterType="com.mass.biz.smart.topic.model.TopicType">
+		SELECT COUNT(0)
+		FROM  sz_topic_type T1
+		where T1.del_falg=0
+		<if test="typeName !=null and typeName !=null">
+			AND T1.type_name LIKE CONCAT("%", #{typeName, jdbcType=VARCHAR},
+			"%")
+		</if>
+		ORDER BY T1.create_time desc
+	</select>
+
+	<!--根据频道名称查询 -->
+	<select id="getTypeName" resultMap="topicType">
+		SELECT
+		<include refid="baseSql" />
+		from sz_topic_type T1
+		where T1.del_falg=0 and
+		T1.type_name=#{typeName,jdbcType=VARCHAR}
+	</select>
+	
+	 <insert id="insertType" useGeneratedKeys="true" keyProperty="rid"
+     parameterType="com.mass.biz.smart.topic.model.TopicType">
+        INSERT INTO sz_topic_type(
+	        type_name, create_time, del_falg,describe_type)
+     	VALUES (
+	        #{typeName,jdbcType=VARCHAR},
+	         NOW(),0,
+	        #{describeType,jdbcType=VARCHAR}
+	        )
+    </insert>
+    
+    <update id="updateType" parameterType="com.mass.biz.smart.topic.model.TopicType">
+		UPDATE sz_topic_type
+		<set>
+			<if test="typeName !=null and typeName !=''">type_name =#{typeName,jdbcType=VARCHAR},</if>
+			describe_type =#{describeType,jdbcType=VARCHAR},
+			create_time=NOW()
+		</set>
+		WHERE rid=#{rid,jdbcType=BIGINT}
+	</update>
+	
+	<update id="delete" parameterType="java.lang.Long">
+		UPDATE sz_topic_type
+		SET del_falg = 1
+		WHERE rid = #{rid,jdbcType=BIGINT}
+	</update>
+
+</mapper>

@@ -1,0 +1,53 @@
+package com.mass.biz.smart.joinMerchant.controller;
+
+import java.util.List;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.mass.biz.smart.joinMerchant.model.SzJoinMerchant;
+import com.mass.biz.smart.joinMerchant.service.SzJoinMerchantService;
+import com.mass.biz.smart.user.model.SzUser;
+import com.mass.biz.smart.user.service.SzUserService;
+import com.mass.core.utils.AjaxResponse;
+
+@RestController
+@RequestMapping("/wx/joinMerchant")
+public class SzJoinMerchantController {
+
+	@Autowired
+	SzJoinMerchantService szJoinMerchantService;
+	@Autowired
+	SzUserService szUserService;
+	
+	@RequestMapping(value = "/list", method = RequestMethod.POST)
+	public AjaxResponse list(SzJoinMerchant szJoinMerchant) {
+		List<SzJoinMerchant> list = szJoinMerchantService.selectList(szJoinMerchant);
+		return AjaxResponse.success("ok", list);
+	}
+	
+	@RequestMapping(value = "/update", method = RequestMethod.POST)
+	public AjaxResponse update(SzJoinMerchant szJoinMerchant, HttpSession session) {
+		
+		int count = szJoinMerchantService.update(szJoinMerchant);
+		//审核通过，则修改sz_user.merchant_id
+		if(szJoinMerchant !=null && szJoinMerchant.getState()==1l && count>0){
+			SzUser szUser = new SzUser();
+			szUser.setRid(szJoinMerchant.getUser_id());
+			szUserService.update(szUser);
+		}
+		return count >0 ? AjaxResponse.success("update ok") : AjaxResponse.error("update error");
+	}
+
+	
+	@RequestMapping(value="/insert", method = RequestMethod.POST)
+    public AjaxResponse insert(SzJoinMerchant szJoinMerchant, HttpSession session){
+		return szJoinMerchantService.insert(szJoinMerchant)>0 ? AjaxResponse.success("add ok") : AjaxResponse.error("add error");
+    		
+    }
+    
+}

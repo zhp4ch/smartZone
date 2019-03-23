@@ -1,0 +1,327 @@
+package com.mass.biz.smart.camera.controller;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import cn.jiguang.common.resp.APIConnectionException;
+import cn.jiguang.common.resp.APIRequestException;
+import cn.jpush.api.JPushClient;
+import cn.jpush.api.push.PushResult;
+import cn.jpush.api.push.model.PushPayload;
+
+import com.mass.biz.smart.camera.controller.HCNetSDK.FMSGCallBack;
+import com.mass.biz.smart.camera.model.CameraModel;
+import com.mass.biz.smart.camera.service.CameraService;
+import com.mass.biz.smart.sign.model.SignRule;
+import com.mass.biz.smart.sign.model.SignUpModel;
+import com.mass.biz.smart.sign.service.SignRuleService;
+import com.mass.biz.smart.sign.service.SignUpService;
+import com.mass.core.utils.AjaxResponse;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+
+/**
+ * 人脸识别Controller
+ * 
+ * @author vm3
+ * 
+ */
+//@RestController
+@RequestMapping(value = "/camera")
+public class CameraController {
+
+	@Autowired
+	private CameraService cameraService;
+	@Autowired
+	private SignUpService signUpService;
+	@Autowired
+	private SignRuleService signRuleService;
+
+	private static HCNetSDK hCNetSDK = HCNetSDK.INSTANCE;
+	private HCNetSDK.NET_DVR_DEVICEINFO_V30 m_strDeviceInfo;// 设备信息
+	private String m_sDeviceIP;// 已登录设备的IP地址
+
+	private NativeLong lUserID = new NativeLong(-1);// 用户句柄
+	private NativeLong lAlarmHandle = new NativeLong(-1);// 报警布防句柄
+	// private NativeLong lListenHandle = new NativeLong(-1);// 报警监听句柄
+
+	FMSGCallBack fMSFCallBack = null;// 报警回调函数实现
+	FMSGCallBack_V31 fMSFCallBack_V31 = null;// 报警回调函数实现
+	
+	//设备IP
+	@Value("${cameraPram.deviceIp}")
+	private String deviceIp;
+	//设备端口
+	@Value("${cameraPram.devicePort}")
+	private String devicePort;
+	//设备登录名
+	@Value("${cameraPram.loginName}")
+	private String loginName;
+	//设备密码
+	@Value("${cameraPram.loginPwd}")
+	private String loginPwd;
+
+	@PostConstruct
+	@RequestMapping(value = "/jButtonLoginActionPerformed")
+	public AjaxResponse jButtonLoginActionPerformed() {
+		
+		
+
+		boolean initSuc = hCNetSDK.NET_DVR_Init();
+		if (initSuc != true) {
+			return AjaxResponse.error("初始化失败");
+		} else {
+			// 注册之前先注销已注册的用户,预览情况下不可注销
+			if (lUserID.longValue() > -1) {
+				// 先注销
+				hCNetSDK.NET_DVR_Logout(lUserID);
+				lUserID = new NativeLong(-1);
+			}
+			// 注册
+			m_sDeviceIP = deviceIp;// 设备ip地址
+			// m_sDeviceIP = jTextFieldIPAddress.getText();// 设备ip地址
+			m_strDeviceInfo = new HCNetSDK.NET_DVR_DEVICEINFO_V30();
+			int iPort = Integer.parseInt(devicePort);
+			// int iPort = Integer.parseInt(jTextFieldPortNumber.getText());
+			lUserID = hCNetSDK.NET_DVR_Login_V30(m_sDeviceIP, (short) iPort,
+					loginName, loginPwd, m_strDeviceInfo);
+			/*
+			 * lUserID = hCNetSDK.NET_DVR_Login_V30(m_sDeviceIP, (short) iPort,
+			 * jTextFieldUserName.getText(), new
+			 * String(jPasswordFieldPassword.getPassword()), m_strDeviceInfo);
+			 */
+			long userID = lUserID.longValue();
+			if (userID == -1) {
+				return AjaxResponse.error("注册失败");
+			} else {
+				// 布防
+				if (lAlarmHandle.intValue() < 0) {
+					// 尚未布防,需要布防
+					if (fMSFCallBack_V31 == null) {
+						fMSFCallBack_V31 = new FMSGCallBack_V31();
+						Pointer pUser = null;
+						if (!hCNetSDK.NET_DVR_SetDVRMessageCallBack_V31(
+								fMSFCallBack_V31, pUser)) {
+							System.out.println("设置回调函数失败!");
+						}
+					}
+					HCNetSDK.NET_DVR_SETUPALARM_PARAM m_strAlarmInfo = new HCNetSDK.NET_DVR_SETUPALARM_PARAM();
+					m_strAlarmInfo.dwSize = m_strAlarmInfo.size();
+					m_strAlarmInfo.byLevel = 1;
+					m_strAlarmInfo.byAlarmInfoType = 1;
+					m_strAlarmInfo.write();
+					lAlarmHandle = hCNetSDK.NET_DVR_SetupAlarmChan_V41(lUserID,
+							m_strAlarmInfo);
+					if (lAlarmHandle.intValue() == -1) {
+						System.out
+								.println("!!!!!!!!!!!!!布防失败!!!!!!!!!!!!!!!!!!");
+						return AjaxResponse.error("布防失败");
+					} else {
+						System.out.println("##########布防成功##########");
+						return AjaxResponse.success("布防成功");
+					}
+				} else {
+					System.out.println("!!!!!!!!!!!!!布防失败!!!!!!!!!!!!!!!!!!");
+					return AjaxResponse.error("布防失败");
+				}
+			}
+		}
+	}
+
+	public class FMSGCallBack_V31 implements HCNetSDK.FMSGCallBack_V31 {
+		// 报警信息回调函数
+		public boolean invoke(NativeLong lCommand,
+				HCNetSDK.NET_DVR_ALARMER pAlarmer, Pointer pAlarmInfo,
+				int dwBufLen, Pointer pUser) {
+			AlarmDataHandle(lCommand, pAlarmer, pAlarmInfo, dwBufLen, pUser);
+			return true;
+		}
+	}
+
+	public void AlarmDataHandle(NativeLong lCommand,
+			HCNetSDK.NET_DVR_ALARMER pAlarmer, Pointer pAlarmInfo,
+			int dwBufLen, Pointer pUser) {
+
+		String sAlarmType = new String();
+		String[] newRow = new String[3];
+		// 报警时间
+		Date today = new Date();
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String[] sIP = new String[2];
+		sAlarmType = new String("lCommand=") + lCommand.intValue();
+		// lCommand是传的报警类型
+		switch (lCommand.intValue()) {
+		case HCNetSDK.COMM_ALARM_V30:
+			HCNetSDK.NET_DVR_ALARMINFO_V30 strAlarmInfoV30 = new HCNetSDK.NET_DVR_ALARMINFO_V30();
+			strAlarmInfoV30.write();
+			Pointer pInfoV30 = strAlarmInfoV30.getPointer();
+			pInfoV30.write(0,
+					pAlarmInfo.getByteArray(0, strAlarmInfoV30.size()), 0,
+					strAlarmInfoV30.size());
+			strAlarmInfoV30.read();
+			switch (strAlarmInfoV30.dwAlarmType) {
+			case 0:
+				sAlarmType = sAlarmType + new String("：信号量报警") + "，" + "报警输入口："
+						+ (strAlarmInfoV30.dwAlarmInputNumber + 1);
+				break;
+			case 1:
+				sAlarmType = sAlarmType + new String("：硬盘满");
+				break;
+			case 2:
+				sAlarmType = sAlarmType + new String("：信号丢失");
+				break;
+			case 3:
+				sAlarmType = sAlarmType + new String("：移动侦测") + "，" + "报警通道：";
+				for (int i = 0; i < 64; i++) {
+					if (strAlarmInfoV30.byChannel[i] == 1) {
+						sAlarmType = sAlarmType + "ch" + (i + 1) + " ";
+					}
+				}
+				break;
+			case 4:
+				sAlarmType = sAlarmType + new String("：硬盘未格式化");
+				break;
+			case 5:
+				sAlarmType = sAlarmType + new String("：读写硬盘出错");
+				break;
+			case 6:
+				sAlarmType = sAlarmType + new String("：遮挡报警");
+				break;
+			case 7:
+				sAlarmType = sAlarmType + new String("：制式不匹配");
+				break;
+			case 8:
+				sAlarmType = sAlarmType + new String("：非法访问");
+				break;
+			}
+			newRow[0] = dateFormat.format(today);
+			// 报警类型
+			newRow[1] = sAlarmType;
+			// 报警设备IP地址
+			sIP = new String(pAlarmer.sDeviceIP).split("\0", 2);
+			newRow[2] = sIP[0];
+			break;
+		case HCNetSDK.COMM_SNAP_MATCH_ALARM: // 人脸黑名单比对报警
+			HCNetSDK.NET_VCA_FACESNAP_MATCH_ALARM strFaceSnapMatch = new HCNetSDK.NET_VCA_FACESNAP_MATCH_ALARM();
+			strFaceSnapMatch.write();
+			Pointer pFaceSnapMatch = strFaceSnapMatch.getPointer();
+			pFaceSnapMatch.write(0,
+					pAlarmInfo.getByteArray(0, strFaceSnapMatch.size()), 0,
+					strFaceSnapMatch.size());
+			strFaceSnapMatch.read();
+
+			PushPayload pushPayload = buildPushObject_all_all_alert();
+			JPushClient jpushClient = new JPushClient(
+					"8f042dadb97b1cef6502e02d", "26edec3a6ce3f5a3de5ede97");
+
+			CameraModel model = new CameraModel();
+			model.setCreate_time(dateFormat.format(today));
+			model.setId_code(new String(
+					strFaceSnapMatch.struBlackListInfo.struBlackListInfo.struAttribute.byCertificateNumber)
+					.trim());
+			model = cameraService.addEntiy(model);
+
+			SignUpModel signUpModel = signUpService.getSignByCode(
+					model.getId_code(), model.getCreate_time());
+			SignRule signRule = signRuleService.getIdCode(model.getId_code());
+			// 如果抓拍时间为上午且未打卡
+			if (Integer.parseInt(model.getCreate_time().substring(11, 13)) < 12
+					&& signUpModel.getOn_state() == 0) {
+				// 判断是否迟到
+				if (model.getCreate_time().substring(11, 16)
+						.compareTo(signRule.getOnTime()) < 0) {
+					// 正常
+					signUpModel.setOn_state(1);
+				} else {
+					// 迟到
+					signUpModel.setOn_state(2);
+				}
+				signUpModel.setOn_time(model.getCreate_time());
+				// 更新打卡状态
+				signUpService.updateEntiy(signUpModel);
+				System.out.println("上班打卡成功！！！");
+				// 向设备推送消息
+				try {
+					PushResult result = jpushClient.sendPush(pushPayload);
+				} catch (APIConnectionException | APIRequestException e) {
+					e.printStackTrace();
+				}
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				// 请求结束后，调用 NettyHttpClient 中的 close 方法，否则进程不会退出。
+				jpushClient.close();
+				System.out.println("上班通知！");
+			} else if (Integer.parseInt(model.getCreate_time()
+					.substring(11, 13)) >= 12) {
+				// 抓拍时间为下午
+				if (model.getCreate_time().substring(11, 16)
+						.compareTo(signRule.getOffTime()) > 0) {
+					// 正常
+					signUpModel.setOff_state(1);
+				} else {
+					// 早退
+					signUpModel.setOff_state(2);
+				}
+				signUpModel.setOff_time(model.getCreate_time());
+				// 更新打卡状态
+				signUpService.updateEntiy(signUpModel);
+				System.out.println("下班打卡成功！！！");
+				// 向设备推送消息
+				try {
+					PushResult result = jpushClient.sendPush(pushPayload);
+				} catch (APIConnectionException | APIRequestException e) {
+					e.printStackTrace();
+				}
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				// 请求结束后，调用 NettyHttpClient 中的 close 方法，否则进程不会退出。
+				jpushClient.close();
+				System.out.println("下班通知！");
+			}
+			break;
+		}
+	}
+
+	/**
+	 * 初始化推送消息
+	 * @return
+	 */
+	/*public static PushPayload buildPushObject_all_alias_alert() {
+		return PushPayload.newBuilder().setPlatform(Platform.all())// 设置接受的平台
+				.setAudience(Audience.all())// Audience设置为all，说明采用广播方式推送，所有用户都可以接收到
+				.setNotification(Notification.alert("打卡成功")).build();
+	}*/
+	
+	public static PushPayload buildPushObject_all_all_alert() {
+        return PushPayload.alertAll("打卡成功！");
+    }
+	
+	/*public static PushPayload buildPushObject_ios_audienceMore_messageWithExtras() {
+	    return PushPayload.newBuilder()
+	            .setPlatform(Platform.android())
+	            .setAudience(Audience.newBuilder()
+	                    .addAudienceTarget(AudienceTarget.tag("tag1", "tag2"))
+	                    .addAudienceTarget(AudienceTarget.alias("alias1", "alias2"))
+	                    .build())
+	            .setMessage(Message.newBuilder()
+	                    .setMsgContent("test111111")
+	                    .addExtra("from", "JPush")
+	                    .build())
+	            .build();
+	}*/
+
+}

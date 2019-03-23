@@ -1,0 +1,86 @@
+package com.mass.biz.smart.merchantScore.model;
+
+/**
+ * 商户积分 sz_merchant_score
+ * @author jiangd
+ */
+public class SzMerchantScore {
+
+	private Long rid;
+	//商户ID
+	private Long merchant_id;
+	//当前分值
+	private Long score;
+	//描述
+	private String description;
+	//增减分值
+	private Long changes;
+	//是否删除：0-否，1-是
+	private Long del_flag;
+	//
+	private String create_time;
+	
+	//商家名称
+	private String corporate_name;
+	
+	//上次分数
+	private Long last_sore;
+	
+	public Long getRid() {
+		return rid;
+	}
+	public void setRid(Long rid) {
+		this.rid = rid;
+	}
+	public Long getMerchant_id() {
+		return merchant_id;
+	}
+	public void setMerchant_id(Long merchant_id) {
+		this.merchant_id = merchant_id;
+	}
+	public Long getScore() {
+		return score;
+	}
+	public void setScore(Long score) {
+		this.score = score;
+	}
+	public String getCreate_time() {
+		return create_time;
+	}
+	public void setCreate_time(String create_time) {
+		this.create_time = create_time;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	public Long getChanges() {
+		return changes;
+	}
+	public void setChanges(Long changes) {
+		this.changes = changes;
+	}
+	public Long getDel_flag() {
+		return del_flag;
+	}
+	public void setDel_flag(Long del_flag) {
+		this.del_flag = del_flag;
+	}
+	public String getCorporate_name() {
+		return corporate_name;
+	}
+	public void setCorporate_name(String corporate_name) {
+		this.corporate_name = corporate_name;
+	}
+	public Long getLast_sore() {
+		return last_sore;
+	}
+	public void setLast_sore(Long last_sore) {
+		this.last_sore = last_sore;
+	}
+	
+	
+
+}

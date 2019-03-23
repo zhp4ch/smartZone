@@ -1,0 +1,106 @@
+package com.mass.biz.smart.property.suggestion.service.impl; 
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.mass.biz.smart.property.suggestion.dao.SuggestMapper;
+import com.mass.biz.smart.property.suggestion.model.Suggest;
+import com.mass.biz.smart.property.suggestion.service.SuggestService;
+
+/**
+ *
+ * 项目名称：smartZone-ht
+ * 类名称：suggestMapperImpl
+ * 类描述：投诉建议接口实现类
+ * 创建人：yihai Zhao
+ * 创建时间：2018年7月18日 下午2:40:03
+ * 修改人：yihai Zhao
+ * 修改时间：2018年7月18日 下午2:40:03
+ * 
+ * @version
+ *
+ */
+@Service
+public class suggestMapperImpl implements SuggestService {
+
+	@Autowired
+	private SuggestMapper suggestMapper;
+	
+	@Override
+	public Suggest addSuggest(Suggest suggest) {
+		int i = suggestMapper.addSuggest(suggest);
+		return i>0 ? suggest : null ;
+	}
+
+	@Override
+	public boolean editSuggest(Suggest suggest) {
+		return 0<this.suggestMapper.editSuggest(suggest);
+	}
+
+	@Override
+	public boolean delSuggest(Long id) {
+		return 0<this.suggestMapper.delSuggest(id);
+	}
+
+	@Override
+	public Suggest getSuggestById(Long id) {
+		this.suggestMapper.updateReadCount(id);
+		Suggest suggestById = this.suggestMapper.getSuggestById(id);
+		return suggestById;
+	}
+
+	@Override
+	public List<Suggest> selectPageList(Suggest suggest, Integer pageIndex,
+			Integer pageSize) {
+		List<Suggest> list = this.suggestMapper.selectPageList(suggest, pageIndex, pageSize);
+		return list;
+	}
+
+	@Override
+	public Long count() {
+		return this.suggestMapper.count();
+	}
+
+	@Override
+	public List<Suggest> selectSuggest() {
+		List<Suggest> list = this.suggestMapper.selectSuggest();
+		return list;
+	}
+
+	@Override
+	public List<Suggest> selectCountByYear(String year) {
+		List<Suggest> list = this.suggestMapper.selectCountByYear(year);
+		return list;
+	}
+
+	@Override
+	public List<Suggest> selectContBySuggestCategory(String year) {
+		List<Suggest> list = this.suggestMapper.selectContBySuggestCategory(year);
+		return list;
+	}
+
+	@Override
+	public List<Suggest> selectHistory(Long rid) {
+		List<Suggest> list = this.suggestMapper.selectHistory(rid);
+		return list;
+	}
+
+	@Override
+	public List<Suggest> selectUserList(Suggest suggest, int pageIndex,
+			Integer pageSize) {
+		List<Suggest> list = this.suggestMapper.selectUserList(suggest, pageIndex, pageSize);
+		return list;
+	}
+
+	@Override
+	public Long userCount(Suggest suggest) {
+		return this.suggestMapper.userCount(suggest);
+	}
+
+	@Override
+	public void addMendUser(Suggest suggest) {
+		this.suggestMapper.addMendUser(suggest);
+	}
+}

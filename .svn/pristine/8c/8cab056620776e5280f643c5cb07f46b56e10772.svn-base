@@ -1,0 +1,98 @@
+package com.mass.biz.smart.services.Contract.service;
+
+import com.mass.biz.smart.services.Contract.model.Contract;
+
+import java.util.List;
+
+/**
+ * @ClassName
+ * @Author 郑上进
+ * @Date 2018/8/7 9:54
+ * @Version 1.0
+ **/
+public interface ContractService {
+
+
+    /*后台管理*/
+
+    /**
+     * 列表及分页查询
+     *
+     * @Author 郑上进
+     * @Date 10:46 2018/8/07
+     **/
+
+    List<Contract> selectPageList(Contract contract, Integer pageIndex, Integer pageSize);
+
+    /**
+     * 统计总条数
+     *
+     * @Author 郑上进
+     * @Date 10:46 2018/8/07
+     **/
+
+    long count(Contract contract);
+
+    /**
+     * 新增数据
+     *
+     * @Author 郑上进
+     * @Date 10:46 2018/8/07
+     **/
+
+    Contract addEntity(Contract contract);
+
+    /**
+     * 修改数据
+     *
+     * @Author 郑上进
+     * @Date 10:46 2018/8/07
+     **/
+
+    boolean editEntity(Contract contract);
+
+    /**
+     * 根据id查询数据
+     *
+     * @Author 郑上进
+     * @Date 10:47 2018/8/07
+     **/
+
+    Contract getEntityById(Long id);
+
+    /**
+     * 删除数据
+     *
+     * @Author 郑上进
+     * @Date 10:47 2018/8/07
+     **/
+
+    boolean deleteEntity(Long id);
+
+    /**
+     * @Name 查询下载文件路径
+     * @Param path
+     * @Author 郑上进
+     * @Date 18:20 2018/8/29
+     **/
+    Contract selectPath (String contractUrl);
+
+
+    /**
+     * @Name 微信-根据公司id查询该用户租赁合同；
+     * @Param companyId
+     * @Author 郑上进
+     * @Date 9:16 2018/8/13
+     **/
+    List<Contract> getCompanyIdByZn(Long companyId);
+
+    /**
+     * @Name 微信-根据公司id查询该用户所有其他类型合同
+     * @Param companyId
+     * @Author 郑上进
+     * @Date 9:17 2018/8/13
+     **/
+    List<Contract> getCompanyIdByQt(Long companyId);
+
+
+}

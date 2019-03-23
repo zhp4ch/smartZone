@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.mass.biz.smart.property.equipmentsInspection.dao.InspectionMapper">
+	<resultMap id="BaseResultMap" type="com.mass.biz.smart.property.equipmentsInspection.model.InspectionModel">
+	
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="rid" jdbcType="BIGINT" property="rid" />
+		<result column="device_id" jdbcType="BIGINT" property="deviceId" />
+		<result column="check_state" jdbcType="TINYINT" property="checkState" />
+		<result column="check_content" jdbcType="VARCHAR" property="checkContent" />
+		<result column="check_pic" jdbcType="VARCHAR" property="checkPic" />
+		<result column="check_time" jdbcType="VARCHAR" property="checkTime" />
+		<result column="deal_with" jdbcType="TINYINT" property="dealWith" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result property="idCode" column="id_code" jdbcType="VARCHAR" />
+		<result property="phone" column="phone" jdbcType="VARCHAR" />
+
+		<!--存储我的处理信息 -->
+		<result property="createTime" column="CREATE_TIME" jdbcType="VARCHAR" />
+		<result property="userId" column="USER_ID" jdbcType="BIGINT" />
+		<result property="inspectionName" column="inspectionName" jdbcType="VARCHAR" />
+		<result property="msgContent" column="MSG_CONTENT" jdbcType="VARCHAR" />
+		<result property="deviceNo" column="device_no" jdbcType="VARCHAR" />
+		<result property="cDeviceName" column="c_device_name" jdbcType="VARCHAR" />
+		<result property="equipmentId" column="equipmentId" jdbcType="BIGINT" />
+		<result property="checkId" column="checkId" jdbcType="BIGINT" />
+
+		<!-- equipments -->
+		<result column="device_no" jdbcType="VARCHAR" property="equipments.deviceNo" />
+		<result column="device_unit_price" jdbcType="VARCHAR" property="equipments.deviceUnitPrice" />
+		<result column="c_device_name" jdbcType="VARCHAR" property="equipments.cDeviceName" />
+		<result column="e_device_name" jdbcType="VARCHAR" property="equipments.eDeviceName" />
+		<result column="country" jdbcType="VARCHAR" property="equipments.country" />
+		<result column="factory" jdbcType="VARCHAR" property="equipments.factory" />
+		<result column="factory_time" jdbcType="VARCHAR" property="equipments.factoryTime" />
+		<result column="own_unit" jdbcType="VARCHAR" property="equipments.ownUnit" />
+		<result column="device_state" jdbcType="TINYINT" property="equipments.deviceState" />
+		<result column="place_location" jdbcType="VARCHAR" property="equipments.placeLocation" />
+		<result column="contact" jdbcType="VARCHAR" property="equipments.contact" />
+		<result column="contact_phone" jdbcType="VARCHAR" property="equipments.contactPhone" />
+		<result column="device_type" jdbcType="TINYINT" property="equipments.deviceType" />
+		<result column="main_use" jdbcType="VARCHAR" property="equipments.mainUse" />
+		<result column="eRid" jdbcType="VARCHAR" property="equipments.rid" />
+		
+		<result column="DEL_FLAG" jdbcType="TINYINT" property="delFlag" />
+		<result property="count" column="COUNT" jdbcType="INTEGER" />
+		<result property="year" column="YEAR" jdbcType="VARCHAR" />
+		<result property="month" column="MONTH" jdbcType="VARCHAR" />
+		<result property="dType" column="dType" jdbcType="TINYINT" />
+		<result property="idImage" column="id_image" jdbcType="VARCHAR" />
+	</resultMap>
+
+
+	<select id="selectPageList" resultMap="BaseResultMap">
+		SELECT
+		a.rid,
+		a.id,
+		a.device_id,
+		a.check_state,
+		a.check_content,
+		a.check_pic,
+		a.check_time,
+		b.rid as eRid,
+		b.device_no,
+		b.device_unit_price,
+		b.c_device_name,
+		b.e_device_name,
+		b.country,
+		b.factory,
+		b.factory_time,
+		b.own_unit,
+		b.device_state,
+		b.place_location,
+		b.contact,
+		b.contact_phone,
+		b.device_type,
+		a.deal_with,
+		b.main_use,
+		c.`name`
+		FROM
+		sz_device_check a
+		LEFT JOIN sz_device_info b ON a.device_id = b.rid
+		LEFT JOIN sz_user c
+		ON a.rid = c.rid
+		WHERE
+		b.del_flag = 0
+		<if test="inspectionModel.checkState !=null">
+			AND a.check_state = #{inspectionModel.checkState,
+			jdbcType=TINYINT}
+		</if>
+		<if
+			test="inspectionModel.checkTime !=null and inspectionModel.checkTime !=''">
+			AND a.check_time LIKE CONCAT("%",
+			#{inspectionModel.checkTime,jdbcType=VARCHAR}, "%")
+
+		</if>
+		<if test="inspectionModel.dealWith !=null">
+			AND a.deal_with = #{inspectionModel.dealWith,
+			jdbcType=VARCHAR}
+		</if>
+		<if
+				test="inspectionModel.deviceNo !=null and inspectionModel.deviceNo !=''">
+				AND b.device_no = #{inspectionModel.deviceNo,
+				jdbcType=VARCHAR}
+			</if>
+			<if
+				test="inspectionModel.cDeviceName !=null and  inspectionModel.cDeviceName !=''">
+				AND b.c_device_name LIKE CONCAT("%",
+				#{inspectionModel.cDeviceName,jdbcType=VARCHAR}, "%")
+
+			</if>
+		<if test="inspectionModel.equipments != null">
+			
+			<if
+				test="inspectionModel.equipments.contact !=null and  inspectionModel.equipments.contact !=''">
+				AND b.contact = #{inspectionModel.equipments.contact,
+				jdbcType=VARCHAR}
+			</if>
+		</if>
+		<if test="inspectionModel.rid != null and inspectionModel.rid !=0">
+			AND a.rid=#{inspectionModel.rid,jdbcType=BIGINT}
+		</if>
+
+		ORDER BY a.check_time DESC,a.check_state DESC
+		LIMIT
+		#{pageIndex},#{pageSize}
+	</select>
+
+	<select id="count" resultType="java.lang.Long"
+		parameterType="com.mass.biz.smart.property.equipmentsInspection.model.InspectionModel">
+		SELECT
+		count(1)
+		FROM
+		sz_device_check a
+		LEFT JOIN sz_device_info b ON
+		a.device_id = b.rid
+		LEFT JOIN sz_user c ON a.rid = c.rid
+		WHERE
+		b.del_flag = 0
+		<if test="checkState !=null">
+			AND a.check_state = #{checkState, jdbcType=TINYINT}
+		</if>
+		<if test="checkTime !=null and checkTime !=''">
+			AND a.check_time LIKE CONCAT("%",
+			#{checkTime,jdbcType=VARCHAR}, "%")
+
+		</if>
+		<if test="dealWith !=null">
+			AND a.deal_with = #{dealWith, jdbcType=VARCHAR}
+		</if>
+		<if test="deviceNo !=null and deviceNo !=''">
+			AND b.device_no = #{deviceNo,
+			jdbcType=VARCHAR}
+		</if>
+		<if test="cDeviceName !=null and  cDeviceName !=''">
+			AND b.c_device_name LIKE CONCAT("%",
+				#{cDeviceName,jdbcType=VARCHAR}, "%")
+		</if>
+		<if test="equipments != null">
+
+			<if test="equipments.contact !=null and  equipments.contact !=''">
+				AND b.contact = #{equipments.contact, jdbcType=VARCHAR}
+			</if>
+		</if>
+		<if test="rid != null and rid !=0">
+			AND a.rid=#{rid,jdbcType=BIGINT}
+		</if>
+		ORDER BY a.check_time DESC,a.check_state DESC
+	</select>
+	<update id="updateInspection"
+		parameterType="com.mass.biz.smart.property.equipmentsInspection.model.InspectionModel">
+		update sz_device_check
+		<set>
+			deal_with = #{dealWith,jdbcType=TINYINT},
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+
+	<!-- 分页查询所有工作人员信息 -->
+
+	<select id="selectUserList" resultMap="BaseResultMap">
+		SELECT
+		t2.name,t2.rid,t2.id_code,t2.phone,
+		(select pu.pid from
+		sz_propertymend_user pu where
+		pu.pid=#{inspectionModel.id,jdbcType=BIGINT} and pu.user_id=t2.rid and
+		pu.type=2) as id
+		FROM sz_user t2
+		WHERE t2.is_delete =0
+		and t2.type = 11
+		<if test="inspectionModel.name !=null and inspectionModel.name !='' ">
+			AND t2.NAME LIKE CONCAT("%", #{inspectionModel.name,
+			jdbcType=VARCHAR},
+			"%")
+		</if>
+		<if test="inspectionModel.idCode!=null and inspectionModel.idCode != '' ">
+			AND t2.id_code = #{inspectionModel.idCode,
+			jdbcType=VARCHAR}
+		</if>
+		ORDER BY ID
+		LIMIT #{pageIndex},#{pageSize}
+	</select>
+
+	<select id="userCount" resultType="java.lang.Long"
+		parameterType="com.mass.biz.smart.property.equipmentsInspection.model.InspectionModel">
+		SELECT
+		count(0)
+		FROM sz_user t2
+		WHERE t2.is_delete =0
+		and t2.type = 11
+		<if test="inspectionModel.name !=null and inspectionModel.name !='' ">
+			AND t2.NAME LIKE CONCAT("%", #{inspectionModel.name,
+			jdbcType=VARCHAR},
+			"%")
+		</if>
+		<if test="inspectionModel.idCode!=null and inspectionModel.idCode != '' ">
+			AND t2.id_code = #{inspectionModel.idCode,
+			jdbcType=VARCHAR}
+		</if>
+	</select>
+
+	<insert id="addMendUser" keyProperty="id"
+		parameterType="com.mass.biz.smart.property.equipmentsInspection.model.InspectionModel">
+		INSERT INTO sz_propertymend_user
+		(
+		pid,name,phone,id_code,CREATE_TIME,DEL_FLAG,user_id,type
+		)
+		VALUES (
+		#{id,jdbcType=BIGINT},
+		#{name,jdbcType=VARCHAR},
+		#{phone,jdbcType=VARCHAR},
+		#{idCode,jdbcType=VARCHAR},
+		NOW(),
+		0,
+		#{rid,jdbcType=BIGINT},
+		2
+		);
+	</insert>
+
+	<select id="selectInsByYear" resultMap="BaseResultMap">
+		SELECT
+		DATE_FORMAT(check_time, '%m') AS MONTH,
+		count(1) AS COUNT
+		FROM
+		sz_device_check
+		WHERE
+		DATE_FORMAT(check_time, '%Y') = #{year}
+		AND
+		DEL_FLAG = 0
+		GROUP BY
+		MONTH
+		ORDER BY
+		MONTH
+	</select>
+
+	<select id="selectInsByEqu" resultMap="BaseResultMap">
+		SELECT t1.device_type as
+		dType,
+
+		COUNT(1) as count
+
+		FROM sz_device_info t1 RIGHT JOIN
+		sz_device_check t2 ON t1.rid =
+		t2.device_id
+
+		WHERE t2.DEL_FLAG = 0 AND
+		DATE_FORMAT(t2.check_time, '%Y') = #{year}
+
+		GROUP BY t1.device_type
+	</select>
+
+	<insert id="addInspection" useGeneratedKeys="true" keyProperty="id"
+		parameterType="com.mass.biz.smart.property.equipmentsInspection.model.InspectionModel">
+		INSERT INTO sz_device_check
+		(
+		RID,device_id,check_state,check_content,check_pic,check_time,deal_with,del_flag
+		)
+		VALUES (
+		#{rid,jdbcType=BIGINT},
+		#{deviceId,jdbcType=BIGINT},
+		#{checkState,jdbcType=TINYINT},
+		#{checkContent,jdbcType=VARCHAR},
+		#{checkPic,jdbcType=VARCHAR},
+		NOW(),
+		#{dealWith,jdbcType=TINYINT},
+		0
+		);
+	</insert>
+
+	<select id="selectInspectionById" resultMap="BaseResultMap">
+		SELECT
+		a.rid,
+		a.id,
+		a.device_id,
+		a.check_state,
+		a.check_content,
+		a.check_pic,
+		a.check_time,
+		b.device_no,
+		b.device_unit_price,
+		b.c_device_name,
+		b.e_device_name,
+		b.country,
+		b.factory,
+		b.factory_time,
+		b.own_unit,
+		b.device_state,
+		b.place_location,
+		b.contact,
+		b.contact_phone,
+		b.device_type,
+		a.deal_with,
+		b.main_use,
+		c.`name`
+		FROM
+		sz_device_check a
+		LEFT JOIN sz_device_info b ON
+		a.device_id = b.rid
+		LEFT JOIN sz_user c ON a.rid = c.rid
+		WHERE
+		b.del_flag = 0 and id = #{id,jdbcType=BIGINT}
+	</select>
+
+	<select id="selectDisposeByUserIdWx" resultMap="BaseResultMap">
+		SELECT
+		t1.USER_ID,t1.CREATE_TIME,
+		t2.*,t3.MSG_CONTENT,t3.`STATUS`,t4.c_device_name
+		FROM
+		sz_propertymend_user t1
+		LEFT JOIN sz_device_check t2 ON t1.PID = t2.id
+		LEFT JOIN sz_message t3 ON t2.id = t3.MANY_ID
+		LEFT JOIN sz_device_info
+		t4 ON t2.device_id = t4.rid
+		WHERE
+		t1.USER_ID = #{userId,jdbcType=BIGINT}
+		AND t2.del_flag = 0
+		AND t1.TYPE = 2
+		AND t3.USER_ID =
+		#{userId,jdbcType=BIGINT}
+		GROUP BY t1.pid
+		ORDER BY
+		t3.create_time DESC
+		LIMIT
+		#{pageIndex},#{pageSize}
+	</select>
+	<select id="selectPropertymendUser" resultMap="BaseResultMap">
+		SELECT
+		c.id_image,c.`name`,c.phone
+		FROM
+		sz_device_check a
+		LEFT JOIN
+		sz_propertymend_user b ON a.id = b.PID LEFT JOIN sz_user c on
+		b.USER_ID=c.rid
+		WHERE
+		a.id = #{id,jdbcType=BIGINT}
+		AND b.TYPE = 2
+		AND
+		a.del_flag = 0
+		AND b.DEL_FLAG = 0
+	</select>
+
+
+</mapper>

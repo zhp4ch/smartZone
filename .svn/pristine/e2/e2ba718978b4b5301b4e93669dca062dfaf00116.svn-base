@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mass.biz.smart.services.ConferenceRoom.dao.AppointmentMapper">
+
+    <resultMap id="appointment" type="com.mass.biz.smart.services.ConferenceRoom.model.Appointment">
+        <result column="ID" property="id" jdbcType="BIGINT"/>
+        <result column="APPLY_ID" property="applyId" jdbcType="BIGINT"/>
+        <result column="APPLY_ROOM_ID" property="aaplyRoomId" jdbcType="BIGINT"/>
+        <result column="APPLY_COMPANY" property="applyCompany" jdbcType="VARCHAR"/>
+        <result column="APPLY_PHONE" property="applyPhone" jdbcType="VARCHAR"/>
+        <result column="USE_ROOM_START_TIME" property="useRoomStartTime" jdbcType="VARCHAR"/>
+        <result column="USE_ROOM_END_TIME" property="useRoomEndTime" jdbcType="VARCHAR"/>
+        <result column="EXAMINE_ID" property="examineId" jdbcType="BIGINT"/>
+        <result column="EXAMINE_STATE" property="examineState" jdbcType="BIGINT"/>
+        <result column="EXAMINE_CONTENT" property="examineContent" jdbcType="VARCHAR"/>
+        <result column="RETURN_STATE" property="returnState" jdbcType="BIGINT"/>
+        <result column="BADLOSS_TEXT" property="badLossText" jdbcType="VARCHAR"/>
+        <result column="FILE_PICTURE_URL" property="FilePictureUrl" jdbcType="VARCHAR"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="DEL_FLAG" property="delFlag" jdbcType="BIGINT"/>
+        <result column="BOARD_ROOM" property="boardRoom" jdbcType="VARCHAR"/>
+
+        <result column="USER_NAME" property="userName" jdbcType="VARCHAR"/>
+        <result column="EXAMINE_NAME" property="examineName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--会议室使用预约表-->
+    <sql id="baseSql">
+        T1.ID,T1.APPLY_ID,T1.APPLY_COMPANY, T1.APPLY_PHONE,T1.APPLY_ROOM_ID,
+        T1.USE_ROOM_START_TIME,T1.USE_ROOM_END_TIME,T1.EXAMINE_STATE,T1.EXAMINE_CONTENT,
+        T1.EXAMINE_ID,T1.RETURN_STATE,T1.BADLOSS_TEXT,T1.FILE_PICTURE_URL,T1.CREATE_TIME, T1.DEL_FLAG
+    </sql>
+
+    <!-- 会议室使用预约表分页查询及总数 -->
+    <select id="selectPageList" resultMap="appointment">
+        SELECT
+        <include refid="baseSql"/>,
+        T2.BOARD_ROOM,
+        T3.NAME AS USER_NAME,
+        T4.NAME AS EXAMINE_NAME
+        FROM
+        sz_appleyroom T1
+        LEFT JOIN sz_conferenceroom T2 ON T1.APPLY_ROOM_ID = T2.ID
+        LEFT JOIN sz_user T3 ON T1.APPLY_ID = T3.RID
+        LEFT JOIN t_sys_user T4 ON T1.EXAMINE_ID = T4.ID
+        WHERE
+        T1.DEL_FLAG = 0
+        <if test="searchParams !=null ">
+
+            <if test="searchParams.applyCompany !=null and searchParams.applyCompany !=''">
+                AND T1.APPLY_COMPANY LIKE CONCAT("%", #{searchParams.applyCompany, jdbcType=VARCHAR}, "%")
+            </if>
+
+            <if test="searchParams.applyPhone !=null and searchParams.applyPhone !='' ">
+                AND T1.APPLY_PHONE = #{searchParams.applyPhone, jdbcType=VARCHAR}
+            </if>
+
+            <if test="searchParams.examineState !=null">
+                AND T1.EXAMINE_STATE = #{searchParams.examineState, jdbcType=TINYINT}
+            </if>
+
+            <if test="searchParams.boardRoom !=null and searchParams.boardRoom !=''">
+                AND FIND_IN_SET(T1.EXAMINE_STATE ,#{searchParams.boardRoom, jdbcType=VARCHAR})
+            </if>
+
+        </if>
+        ORDER BY T1.CREATE_TIME DESC
+        LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+    </select>
+    
+    <!--统计总条数-->
+    <select id="count" resultType="java.lang.Long" parameterType="com.mass.biz.smart.services.ConferenceRoom.model.Appointment">
+        SELECT
+        COUNT(0)
+        FROM
+        sz_appleyroom T1
+        WHERE
+        T1.DEL_FLAG=0
+        <if test="applyCompany !=null and applyCompany !=''">
+            AND T1.APPLY_COMPANY LIKE CONCAT("%", #{applyCompany, jdbcType=VARCHAR}, "%")
+        </if>
+
+        <if test="applyPhone !=null and applyPhone !='' ">
+            AND T1.APPLY_PHONE = #{applyPhone, jdbcType=VARCHAR}
+        </if>
+
+        <if test="examineState !=null">
+            AND T1.EXAMINE_STATE = #{examineState, jdbcType=TINYINT}
+        </if>
+
+        <if test="boardRoom !=null and boardRoom !=''">
+            AND FIND_IN_SET(T1.EXAMINE_STATE ,#{boardRoom, jdbcType=VARCHAR})
+        </if>
+
+    </select>
+
+    <!--查询所有成功的申请-->
+    <select id="selectEntity" resultMap="appointment">
+        SELECT
+        <include refid="baseSql"/>
+        FROM
+        sz_appleyroom T1
+        WHERE
+        T1.DEL_FLAG = 0
+        AND
+        T1.EXAMINE_STATE =1
+    </select>
+
+    <!--修改数据(审核)-->
+    <update id="update" parameterType="com.mass.biz.smart.merchant.model.SzMerchant">
+        UPDATE sz_appleyroom
+        <set>
+            <if test="examineId !=null and examineId !=''">EXAMINE_ID=#{examineId,jdbcType=BIGINT},</if>
+            <if test="examineState !=null and examineState !=''">EXAMINE_STATE=#{examineState,jdbcType=BIGINT},</if>
+            <if test="examineContent != null and examineContent!='' ">EXAMINE_CONTENT=#{examineContent,jdbcType=VARCHAR},</if>
+            <if test="returnState !=null and returnState !=''">RETURN_STATE=#{returnState,jdbcType=BIGINT},</if>
+            <if test="badLossText != null and badLossText!='' ">BADLOSS_TEXT=#{badLossText,jdbcType=VARCHAR},</if>
+            <if test="FilePictureUrl != null and FilePictureUrl!='' ">FILE_PICTURE_URL=#{FilePictureUrl,jdbcType=VARCHAR},</if>
+        </set>
+        WHERE ID=#{id,jdbcType=BIGINT}
+    </update>
+
+    <!--删除数据-->
+    <update id="delete" parameterType="java.lang.Long">
+    UPDATE sz_appleyroom
+    SET DEL_FLAG = 1
+    WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!-- 根据id查询数据 -->
+    <!--<select id="getEntityById" resultMap="szMerchant">-->
+    <!--SELECT-->
+    <!--<include refid="baseSql"/>,-->
+    <!--T1.NAME AS USER_NAME,T3.NAME AS EXAMINE_NAME-->
+    <!--FROM-->
+    <!--sz_merchant T1,sz_user T1,t_sys_user T3-->
+    <!--WHERE-->
+    <!--T1.USER_ID=T1.RID-->
+    <!--AND-->
+    <!--T1.EXAMINE_ID=T3.ID-->
+    <!--AND-->
+    <!--T1.ID=#{id,jdbcType=BIGINT}-->
+    <!--AND-->
+    <!--T1.DEL_FLAG = 0-->
+    <!--</select>-->
+
+    <!--新增数据(用户新增)-->
+    <!--<insert id="insert" useGeneratedKeys="true" keyProperty="id"-->
+    <!--parameterType="com.mass.biz.smart.merchant.model.SzMerchant">-->
+    <!--INSERT sz_merchant-->
+    <!--(-->
+    <!--USER_ID,-->
+    <!--USER_NAME,-->
+    <!--REPRESENTATIVE_NAME,-->
+    <!--CORPORATE_NAME,-->
+    <!--EXAMINE_STATE,-->
+    <!--APTITUDE_PICTURE_URL,-->
+    <!--CONTRACT_PICTURE_URL,-->
+    <!--PAY_PICTURE_URL,-->
+    <!--CREATE_TIME,-->
+    <!--DEL_FLAG-->
+    <!--)-->
+    <!--VALUES (-->
+    <!--#{userId,jdbcType=BIGINT},-->
+    <!--#{userName,jdbcType=VARCHAR},-->
+    <!--#{representativeName,jdbcType=VARCHAR},-->
+    <!--#{corporateName,jdbcType=VARCHAR},-->
+    <!--0,-->
+    <!--#{aptitudePictureUrl,jdbcType=VARCHAR},-->
+    <!--#{contractPictureUrl,jdbcType=VARCHAR},-->
+    <!--#{payPictureUrl,jdbcType=VARCHAR},-->
+    <!--NOW(),-->
+    <!--0-->
+    <!--)-->
+    <!--</insert>-->
+
+
+
+
+</mapper>

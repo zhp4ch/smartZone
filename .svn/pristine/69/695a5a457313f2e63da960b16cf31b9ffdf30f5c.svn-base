@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.smart.user.dao.SzUserMapper">
+	<resultMap id="szUser" type="com.mass.biz.smart.user.model.SzUser">
+		<result property="rid" column="rid" jdbcType="BIGINT" />
+		<result property="name" column="name" jdbcType="VARCHAR" />
+		<result property="id_code" column="id_code" jdbcType="VARCHAR" />
+		<result property="phone" column="phone" jdbcType="VARCHAR" />
+		<result property="type" column="type" jdbcType="TINYINT" />
+		<result property="merchant_id" column="merchant_id" jdbcType="BIGINT" />
+		<result property="is_delete" column="is_delete" jdbcType="TINYINT" />
+		<result property="head_image" column="head_image" jdbcType="VARCHAR" />
+		<result property="create_time" column="create_time" jdbcType="VARCHAR" />
+		<result property="corporateName" column="CORPORATE_NAME" jdbcType="VARCHAR" />
+		<result property="open_id" column="open_id" jdbcType="VARCHAR" />
+		<result property="id_image" column="id_image" jdbcType="VARCHAR" />
+		<result property="nickname" column="nickname" jdbcType="VARCHAR" />
+		<result property="merchant_code" column="merchant_code" jdbcType="VARCHAR" />
+	</resultMap>
+	
+    <sql id="baseSql">
+        T1.RID, T1.NAME,T1.ID_CODE, T1.PHONE,T1.ID_IMAGE, T1.TYPE, T1.MERCHANT_ID,T1.NICKNAME, T1.IS_DELETE, T1.HEAD_IMAGE, 
+        T1.CREATE_TIME, T1.UPDATE_TIME,T1.MERCHANT_CODE
+    </sql>
+    <select id="selectListByCondition" resultMap="szUser">
+    	SELECT 
+		<include refid="baseSql"/>,T2.CORPORATE_NAME
+        	 FROM SZ_USER T1
+        		 <!-- LEFT JOIN SZ_MERCHANT T2 ON T1.MERCHANT_ID = T2.ID -->
+ 				 LEFT JOIN SZ_MERCHANT T2 ON T1.MERCHANT_CODE = T2.MERCHANT_CODE
+ 				WHERE T1.IS_DELETE =0
+    		<if test="searchParams !=null ">
+		      <if test="searchParams.phone !=null and searchParams.phone !=''">
+		     	AND T1.PHONE LIKE CONCAT("%", #{searchParams.phone, jdbcType=VARCHAR}, "%")
+		      </if>
+		      <if test="searchParams.name !=null and searchParams.name !=''">
+		        AND T1.NAME LIKE CONCAT("%", #{searchParams.name, jdbcType=VARCHAR}, "%")
+		      </if>
+		      <if test="searchParams.corporateName !=null and searchParams.corporateName !=''">
+		        AND T2.CORPORATE_NAME LIKE CONCAT("%", #{searchParams.corporateName, jdbcType=VARCHAR}, "%")
+		      </if>
+		      <if test="searchParams.id_code !=null and searchParams.id_code !=''">
+		        AND T1.ID_CODE LIKE CONCAT("%", #{searchParams.id_code, jdbcType=VARCHAR}, "%")
+		      </if>
+        </if>
+    </select>
+
+	<select id="selectPageList" resultMap="szUser" >
+		SELECT 
+		<include refid="baseSql"/>,T2.CORPORATE_NAME
+        	 FROM SZ_USER T1
+        	<!--  LEFT JOIN SZ_MERCHANT T2 ON T1.MERCHANT_ID = T2.ID -->
+        	 LEFT JOIN SZ_MERCHANT T2 ON T1.MERCHANT_CODE = T2.MERCHANT_CODE
+			 WHERE T1.IS_DELETE =0
+		 <if test="searchParams !=null ">
+		      <if test="searchParams.phone !=null and searchParams.phone !=''">
+		     	AND T1.PHONE LIKE CONCAT("%", #{searchParams.phone, jdbcType=VARCHAR}, "%")
+		      </if>
+		      <if test="searchParams.name !=null and searchParams.name !=''">
+		        AND T1.NAME LIKE CONCAT("%", #{searchParams.name, jdbcType=VARCHAR}, "%")
+		      </if>
+		      <if test="searchParams.corporateName !=null and searchParams.corporateName !=''">
+		        AND T2.CORPORATE_NAME LIKE CONCAT("%", #{searchParams.corporateName, jdbcType=VARCHAR}, "%")
+		      </if>
+		      <if test="searchParams.id_code !=null and searchParams.id_code !=''">
+		        AND T1.ID_CODE LIKE CONCAT("%", #{searchParams.id_code, jdbcType=VARCHAR}, "%")
+		      </if>
+        </if>
+				LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+	</select>
+
+	<select id="count" resultType="java.lang.Long" parameterType="com.mass.biz.smart.user.model.SzUser">
+		SELECT count(0) FROM SZ_USER T1
+		<!-- LEFT JOIN SZ_MERCHANT T2 ON T1.MERCHANT_ID = T2.ID -->
+		 LEFT JOIN SZ_MERCHANT T2 ON T1.MERCHANT_CODE = T2.MERCHANT_CODE
+		WHERE T1.IS_DELETE =0
+		<if test="searchParams !=null ">
+			<if test="searchParams.phone !=null and searchParams.phone !=''">
+	    	AND T1.PHONE LIKE CONCAT("%", #{searchParams.phone, jdbcType=VARCHAR}, "%")
+	       </if>
+	       <if test="searchParams.name !=null and searchParams.name !=''">
+	        AND T1.NAME LIKE CONCAT("%", #{searchParams.name, jdbcType=VARCHAR}, "%")
+	       </if>
+	        <if test="searchParams.corporateName !=null and searchParams.corporateName !=''">
+		        AND T2.CORPORATE_NAME LIKE CONCAT("%", #{searchParams.corporateName, jdbcType=VARCHAR}, "%")
+		    </if>
+		    <if test="searchParams.id_code !=null and searchParams.id_code !=''">
+		        AND T1.ID_CODE LIKE CONCAT("%", #{searchParams.id_code, jdbcType=VARCHAR}, "%")
+		    </if>
+	    </if>
+	</select>
+
+	<update id="update" parameterType="com.mass.biz.smart.user.model.SzUser">
+        UPDATE SZ_USER    
+        <set>
+        	<if test="name !=null and name !=''">name=#{name,jdbcType=VARCHAR},</if>
+            <if test="id_code !=null and id_code!=''">id_code=#{id_code,jdbcType=VARCHAR},</if>
+            <if test="phone !=null and phone !=''">phone=#{phone,jdbcType=VARCHAR},</if>
+            <if test="type !=null and type !=''">type=#{type,jdbcType=INTEGER},</if>
+            <if test="merchant_id !=null and merchant_id !=''">merchant_id=#{merchant_id,jdbcType=INTEGER},</if>
+            <if test="is_delete !=null and is_delete !=''">is_delete=#{is_delete,jdbcType=INTEGER},</if>
+            <if test="head_image !=null and head_image !=''">head_image=#{head_image,jdbcType=VARCHAR},</if>
+            <if test="create_time !=null and create_time !=''">create_time=#{create_time,jdbcType=VARCHAR},</if>
+            <if test="update_time !=null and update_time !=''">update_time=#{update_time,jdbcType=TINYINT},</if>        
+            <if test="nickname !=null and nickname !=''">nickname=#{nickname,jdbcType=TINYINT},</if>        
+            <if test="id_image !=null and id_image !=''">id_image=#{id_image,jdbcType=VARCHAR},</if> 
+            <if test="merchant_code !=null and merchant_code !=''">merchant_code=#{merchant_code,jdbcType=INTEGER},</if>       
+        </set>
+        WHERE ID_CODE=#{id_code,jdbcType=VARCHAR}
+    </update>
+   <insert  id="insert" useGeneratedKeys="true" keyProperty="rid" parameterType="com.mass.biz.smart.user.model.SzUser">
+        INSERT INTO SZ_USER(
+	        NAME, ID_CODE, PHONE, TYPE, MERCHANT_ID, HEAD_IMAGE,
+	        CREATE_TIME, OPEN_ID, ID_IMAGE, NICKNAME,MERCHANT_CODE)
+     	VALUES (
+	        #{name,jdbcType=VARCHAR},
+	        #{id_code,jdbcType=VARCHAR},
+	        #{phone,jdbcType=VARCHAR},
+	        #{type,jdbcType=TINYINT},
+	        #{merchant_id,jdbcType=BIGINT},
+	        #{head_image,jdbcType=VARCHAR},
+	       	now(),
+	        #{open_id,jdbcType=VARCHAR},
+	        #{id_image,jdbcType=VARCHAR},
+	        #{nickname,jdbcType=VARCHAR},
+	        #{merchant_code,jdbcType=VARCHAR}
+	        )
+      </insert>
+    
+	<update id="delete" parameterType="java.lang.Long">
+        UPDATE SZ_USER
+        SET IS_DELETE = #{delFlag,jdbcType=BIGINT}
+        WHERE RID = #{rid,jdbcType=BIGINT}
+    </update>
+    
+    <select id="getEntityById" resultMap="szUser">
+       SELECT 
+		<include refid="baseSql"/>,T2.CORPORATE_NAME
+        	 FROM SZ_USER T1
+        	<!--  LEFT JOIN SZ_MERCHANT T2 ON T1.MERCHANT_ID = T2.ID -->
+        	LEFT JOIN SZ_MERCHANT T2 ON T1.MERCHANT_CODE = T2.MERCHANT_CODE
+			 WHERE T1.IS_DELETE =0 AND T1.RID = #{rid,jdbcType=BIGINT}
+    </select>
+    
+    <select id="getEntityByOpendId" resultMap="szUser">
+        SELECT
+        	<include refid="baseSql"/>
+        	 FROM SZ_USER T1
+        WHERE T1.IS_DELETE = 0 AND T1.OPEN_ID = #{openId,jdbcType=VARCHAR}
+    </select>
+    
+    
+    <select id="countByIdCode" resultType="java.lang.Long" parameterType="com.mass.biz.smart.user.model.SzUser">
+		SELECT count(0) FROM SZ_USER T1
+		     WHERE T1.IS_DELETE = 0 AND T1.ID_CODE =#{szUser.id_code, jdbcType=VARCHAR}
+	</select>
+	
+	<insert id="batchInsert" parameterType="java.util.List">
+	    INSERT INTO SZ_USER(
+	        NAME, ID_CODE, PHONE,CREATE_TIME,MERCHANT_CODE)
+     	VALUES 
+       <foreach collection="list" item="item" index="index" separator="," > 
+       		(
+       		#{item.name,jdbcType=VARCHAR},
+	        #{item.id_code,jdbcType=VARCHAR},
+	        #{item.phone,jdbcType=VARCHAR},
+	       	now(),
+	       	#{item.merchant_code,jdbcType=VARCHAR}
+	        )
+       </foreach> 
+	</insert>
+    <!-- 通过用户身份证号查询用户详情 -->
+    <select id="getEntityByIdCard" resultMap="szUser">
+        SELECT
+        	<include refid="baseSql"/>
+        	 FROM SZ_USER T1
+        WHERE T1.IS_DELETE = 0 AND T1.ID_CODE = #{id_code,jdbcType=BIGINT}
+    </select>
+    
+    
+   <update id="updateBatch" parameterType="java.util.List">    
+         <foreach separator=";" index="index" item="item" collection="list" close="" open=""> 
+           UPDATE SZ_USER
+	             <set>
+	            	ID_IMAGE= #{item.id_image,jdbcType=VARCHAR}
+	       		 </set>
+				 <where>
+                 	ID_CODE= #{item.id_code,jdbcType=VARCHAR}		
+               	 </where>
+	       </foreach>
+   </update>
+
+
+</mapper>

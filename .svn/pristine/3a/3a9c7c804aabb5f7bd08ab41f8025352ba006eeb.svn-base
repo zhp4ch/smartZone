@@ -1,0 +1,118 @@
+package com.mass.biz.smart.services.Increment.controller;
+
+import com.mass.biz.news.controller.NewsController;
+import com.mass.biz.smart.services.Increment.model.Increment;
+import com.mass.biz.smart.services.Increment.service.IncrementService;
+import com.mass.core.utils.AjaxResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+/**
+ * @ClassName 增值服务
+ * @Author 郑上进
+ * @Date 2018/8/13 14:21
+ * @Version 1.0
+ **/
+@RestController
+@RequestMapping(value = "/increment")
+public class IncrementController {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(NewsController.class);
+
+    @Autowired
+    private IncrementService incrementService;
+
+    /**
+     * @Name 列表及条件查询
+     * @Param page, limit
+     * @Author 郑上进
+     * @Date 15:59 2018/8/7
+     **/
+    @RequestMapping(value = "/selectPageList", method = RequestMethod.GET)
+    public AjaxResponse selectPageList(Increment increment,
+                                       @RequestParam(value = "page") Integer pageIndex,
+                                       @RequestParam(value = "limit") Integer pageSize) {
+        try {
+            Long count = incrementService.count(increment);
+            List<Increment> list = incrementService.selectPageList(increment, (pageIndex - 1) * pageSize, pageSize);
+            return AjaxResponse.success("ok", list, count, pageIndex);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("select incre error!", e);
+            return AjaxResponse.error("error");
+        }
+    }
+
+
+    /**
+     * @Name 微信用 -新增服务
+     * @Param object
+     * @Author 郑上进
+     * @Date 10:32 2018/8/10
+     **/
+    @RequestMapping(value = "/addEntity", method = RequestMethod.POST)
+    public AjaxResponse addEntity(Increment increment) {
+        try {
+            this.incrementService.addEntity(increment);
+            return AjaxResponse.success("ok", 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("inster incre error!", e);
+            return AjaxResponse.error("error");
+        }
+    }
+
+    /**
+     * @Name 修改数据
+     * @Param object
+     * @Author 郑上进
+     * @Date 15:52 2018/8/13
+     **/
+    @RequestMapping(value = "/editEntity", method = RequestMethod.POST)
+    public AjaxResponse editEntity(Increment increment) {
+        try {
+            this.incrementService.editEntity(increment);
+            return AjaxResponse.success("ok", 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("update incre error!", e);
+            return AjaxResponse.error("error");
+        }
+    }
+
+
+    /**
+     * @Name 删除数据
+     * @Param id
+     * @Author 郑上进
+     * @Date 16:25 2018/8/13
+     **/
+    
+    @RequestMapping(value = "/deleteEntity", method = RequestMethod.POST)
+    public AjaxResponse deleteEntity(Long id) {
+        try {
+            this.incrementService.deleteEntity(id);
+            return AjaxResponse.success("ok", 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("update incre error!", e);
+            return AjaxResponse.error("error");
+        }
+    }
+
+
+
+
+
+
+
+
+
+}

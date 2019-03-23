@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.smart.sign.dao.SignUpMapper">
+	<resultMap id="signModel" type="com.mass.biz.smart.sign.model.SignUpModel">
+		<result property="rid" column="rid" jdbcType="BIGINT" />
+		<result property="user_id" column="user_id" jdbcType="BIGINT" />
+		<result property="merchant_id" column="merchant_id" jdbcType="BIGINT" />
+		<result property="on_time" column="on_time" jdbcType="VARCHAR" />
+		<result property="on_state" column="on_state" jdbcType="TINYINT" />
+		<result property="off_time" column="off_time" jdbcType="VARCHAR" />
+		<result property="off_state" column="off_state" jdbcType="TINYINT" />
+		<result property="create_time" column="create_time" jdbcType="VARCHAR" />
+		<result property="update_time" column="update_time" jdbcType="VARCHAR" />
+		<result property="remark" column="remark" jdbcType="VARCHAR" />
+		<result property="name" column="name" jdbcType="VARCHAR" />
+		<result property="corporate_name" column="corporate_name"
+			jdbcType="VARCHAR" />
+		<result property="id_image" column="id_image" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<select id="selectPageList" resultMap="signModel">
+		SELECT
+		CASE a.on_state
+		WHEN 0 THEN
+		a.on_time = NULL
+		ELSE
+		a.on_time
+		END
+		on_time,
+		a.*,
+		b.`name`,
+		id_image,
+		c.CORPORATE_NAME
+		FROM
+		sz_sign_record a
+		LEFT JOIN
+		sz_user b ON
+		a.user_id = b.rid
+		LEFT JOIN
+		sz_merchant c ON
+		a.merchant_id
+		= c.ID
+		WHERE 1 =
+		1
+		<if test="searchParams !=null ">
+			<if test="searchParams.name !=null and searchParams.name !=''">
+				AND b.`name` LIKE
+				CONCAT("%",#{searchParams.name,jdbcType=VARCHAR},"%")
+			</if>
+			<if
+				test="searchParams.corporate_name !=null and searchParams.corporate_name !=''">
+				AND c.corporate_name LIKE
+				CONCAT("%",#{searchParams.corporate_name,jdbcType=VARCHAR},"%")
+			</if>
+			<choose>
+				<when test="searchParams.on_state !=null and searchParams.on_state !=''">
+					<if test="searchParams.on_state ==1">
+						AND
+						a.on_state=#{searchParams.on_state,jdbcType=TINYINT}
+						AND
+						a.off_state=#{searchParams.on_state,jdbcType=TINYINT}
+					</if>
+					<if test="searchParams.on_state ==2">
+						AND
+						a.on_state=#{searchParams.on_state,jdbcType=TINYINT}
+						or
+						a.off_state=#{searchParams.on_state,jdbcType=TINYINT}
+					</if>
+				</when>
+				<otherwise>
+					and a.on_state != 0
+				</otherwise>
+			</choose>
+		</if>
+		order by a.on_time desc
+		LIMIT
+		#{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+	</select>
+
+	<select id="count" resultType="java.lang.Long"
+		parameterType="com.mass.biz.smart.sign.model.SignUpModel">
+		SELECT
+		count(0)
+		FROM
+		sz_sign_record a
+		LEFT JOIN
+		sz_user b ON a.user_id =
+		b.rid
+		LEFT JOIN
+		sz_merchant c ON
+		a.merchant_id
+		= c.ID
+		WHERE 1 = 1
+		<if test="name !=null and name !=''">
+			AND b.`name` LIKE
+			CONCAT("%",#{name,jdbcType=VARCHAR},"%")
+		</if>
+		<if test="corporate_name !=null and corporate_name !=''">
+			AND c.corporate_name LIKE
+			CONCAT("%",#{corporate_name,jdbcType=VARCHAR},"%")
+		</if>
+		<choose>
+			<when test="on_state !=null and on_state !=''">
+				<if test="on_state ==1">
+					AND a.on_state=#{on_state,jdbcType=TINYINT}
+					AND a.off_state=#{on_state,jdbcType=TINYINT}
+				</if>
+				<if test="on_state ==2">
+					AND a.on_state=#{on_state,jdbcType=TINYINT}
+					or a.off_state=#{on_state,jdbcType=TINYINT}
+				</if>
+			</when>
+			<otherwise>
+				and a.on_state != 0
+			</otherwise>
+		</choose>
+		order by a.on_time desc
+	</select>
+
+	<select id="getUserDetail" resultMap="signModel">
+		select a.*,
+		b.`name`,
+		c.CORPORATE_NAME
+		from sz_sign_record a
+		left join
+		sz_user b
+		on a.user_id = b.rid
+		left join sz_merchant c
+		on a.merchant_id =
+		c.ID
+		where a.on_state !=0
+		and a.user_id =
+		#{searchParams.user_id,jdbcType=BIGINT}
+		<if test="searchParams !=null ">
+			<if test="searchParams.timeBefore !=null and searchParams.timeBefore !=''">
+				and <![CDATA[a.on_time >= #{searchParams.timeBefore,jdbcType=VARCHAR}]]>
+			</if>
+			<if test="searchParams.timeAfter !=null and searchParams.timeAfter !=''">
+				and <![CDATA[a.on_time <= #{searchParams.timeAfter,jdbcType=VARCHAR}]]>
+			</if>
+		</if>
+		order by a.on_time
+		LIMIT
+		#{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+	</select>
+
+	<select id="detailCount" resultType="java.lang.Long"
+		parameterType="com.mass.biz.smart.sign.model.SignUpModel">
+		select count(0)
+		from sz_sign_record a
+		left join
+		sz_user b
+		on a.user_id =
+		b.rid
+		left join sz_merchant c
+		on a.merchant_id =
+		c.ID
+		where a.on_state !=0
+		and a.user_id = #{user_id,jdbcType=BIGINT}
+		<if test="timeBefore !=null and timeBefore !=''">
+			and <![CDATA[a.on_time >= #{timeBefore,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="timeAfter !=null and timeAfter !=''">
+			and <![CDATA[a.on_time >= #{timeAfter,jdbcType=VARCHAR}]]>
+		</if>
+		order by a.on_time
+	</select>
+
+	<update id="updateEntiy" parameterType="com.mass.biz.smart.sign.model.SignUpModel">
+		UPDATE sz_sign_record
+		<set>
+			<if test="on_time !=null and on_time !=''">on_time=#{on_time,jdbcType=VARCHAR},</if>
+			<if test="on_state !=null">on_state=#{on_state,jdbcType=TINYINT},</if>
+			<if test="off_time !=null and off_time !=''">off_time=#{off_time,jdbcType=VARCHAR},</if>
+			<if test="off_state !=null">off_state=#{off_state,jdbcType=TINYINT},</if>
+			UPDATE_TIME=NOW()
+		</set>
+		WHERE rid=#{rid,jdbcType=BIGINT}
+	</update>
+
+	<select id="getSignByCode" resultMap="signModel">
+		SELECT
+		*
+		FROM
+		sz_sign_record a
+		left join sz_user b
+		on a.user_id = b.rid
+		WHERE
+		b.id_code =
+		#{id_code,jdbcType=VARCHAR}
+		AND
+		SUBSTR(a.on_time,1,10) =
+		SUBSTR(#{create_time,jdbcType=VARCHAR},1,10)
+	</select>
+	<!-- 按月份统计打卡数量 -->
+	<select id="selectMonthCount" resultType="java.util.Map">
+		SELECT B.mon,B.count
+		FROM
+		(select DATE_FORMAT(on_time,'%m') as mon,count(*) as count
+		from sz_sign_record
+		where DATE_FORMAT(on_time,'%Y')= year(now()) and <![CDATA[on_state <> 0]]>
+		group by DATE_FORMAT(on_time,'%m')
+		UNION
+		SELECT '01' as mon,0 as count
+		union
+		SELECT '02' as mon,0 as count
+		union
+		SELECT '03' as mon,0 as count
+		union
+		SELECT '04' as mon,0 as count
+		union
+		SELECT '05' as mon,0 as count
+		union
+		SELECT '06' as mon,0 as count
+		union
+		SELECT '07' as mon,0 as count
+		union
+		SELECT '08' as mon,0 as count
+		union
+		SELECT '09' as mon,0 as count
+		union
+		SELECT '10' as mon,0 as count
+		union
+		SELECT '11' as mon,0 as count
+		union
+		SELECT '12' as mon,0 as count) B
+		GROUP BY B.mon
+		ORDER BY B.mon
+	</select>
+
+	<!-- 查询每天考勤人数 -->
+	<select id="selectDayCount" resultType="java.util.Map">
+		select day(sr.on_time) as day,sum(<![CDATA[case when sr.on_state <> 0 then 1 else 0 end]]>
+		) as count
+		from sz_sign_record sr
+		where DATE_FORMAT(on_time,'%Y-%m')=
+		#{date}
+		group by day(sr.on_time)
+		order by day(sr.on_time)
+	</select>
+	<insert id="initSignData">
+		insert into
+		sz_sign_record(user_id,merchant_id,on_time,on_state,off_state)
+		SELECT
+		a.rid,
+		a.merchant_id,
+		now(),
+		0,
+		0
+		FROM
+		sz_user a
+		INNER JOIN sz_sign_rule b ON
+		a.merchant_id = b.merchant_id;
+	</insert>
+
+</mapper>

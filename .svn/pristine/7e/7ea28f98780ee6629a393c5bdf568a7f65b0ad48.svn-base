@@ -1,0 +1,175 @@
+package com.mass.biz.smart.merchantMgt.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.mass.biz.smart.merchantMgt.model.SzMerchantMgt;
+import com.mass.biz.smart.merchantMgt.service.SzMerchantMgtService;
+import com.mass.biz.smart.merchantScore.model.SzMerchantScore;
+import com.mass.biz.smart.merchantScore.service.SzMerchantScoreService;
+import com.mass.biz.smart.merchantScore.service.impl.SzMerchantScoreImpl;
+import com.mass.biz.smart.user.model.SzUser;
+import com.mass.biz.smart.user.service.SzUserService;
+import com.mass.biz.utils.ExcelUtil;
+import com.mass.biz.utils.StringUtil;
+import com.mass.core.framework.aop.LogAop;
+import com.mass.core.sys.user.model.SysUser;
+import com.mass.core.utils.AjaxResponse;
+
+/**
+ * 后台-商户管理
+ * @author jiangd
+ */
+@RestController
+@RequestMapping("/szMerchantMgt")
+public class SzMerchantMgtController {
+	
+	@Autowired
+	SzMerchantMgtService szMerchantMgtService;
+	
+	@Autowired
+	SzMerchantScoreService szMerchantScoreService;
+	
+	
+	@Autowired
+	SzUserService szUserService;
+	
+	private final static Logger LOGGER = LoggerFactory.getLogger(SzMerchantMgtController.class);
+	
+	
+	@LogAop(menuName = "查询", operationDesc = "查询", operationType = "3")
+	@RequestMapping(value = "/list", method = RequestMethod.GET)
+	public AjaxResponse list(SzMerchantMgt szMerchantMgt, @RequestParam(value = "page") Integer pageIndex,
+			@RequestParam(value = "limit") Integer pageSize) {
+		long count = szMerchantMgtService.count(szMerchantMgt);
+		List<SzMerchantMgt> list = szMerchantMgtService.selectPageList(szMerchantMgt, (pageIndex - 1) * pageSize, pageSize);
+		return AjaxResponse.success("ok", list, count, pageIndex);
+	}
+
+	
+	@LogAop(menuName = "Excel信息", operationDesc = "批理插入", operationType = "1")
+	@RequestMapping(value = "/batchImport", method = RequestMethod.POST)
+	@Transactional
+	public AjaxResponse batchInsert(@RequestParam("file") MultipartFile file, HttpSession session) {
+		try {
+			List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+			list = ExcelUtil.readXls(file);
+
+			List<SzMerchantMgt> szMerchantMgtList = new ArrayList<SzMerchantMgt>();
+
+			for (Map<String, Object> m : list) {
+
+				SzMerchantMgt szMerchantMgt = new SzMerchantMgt();
+
+				String merchant_code = "";
+				String park = "";
+				String doorNumber = "";
+				String building_number = "";
+				
+				for (String k : m.keySet()) {
+//					公司名称	法定代表人	公司简称	所属园区	门牌号    公司详细地址
+					switch (k) {
+						case "公司名称":
+							szMerchantMgt.setCorporateName(m.get(k).toString());
+							break;
+						case "法定代表人":
+							szMerchantMgt.setRepresentativeName(m.get(k).toString());
+							break;
+						case "公司简称":
+							szMerchantMgt.setAbbreviation(m.get(k).toString());
+							break;
+						case "所属园区":
+							park = m.get(k).toString();
+							szMerchantMgt.setPark(m.get(k).toString());
+							break;
+						case "门牌编号":
+							doorNumber = m.get(k).toString();
+							szMerchantMgt.setDoorNumber(m.get(k).toString());
+							break;
+						case "公司详细地址":
+							szMerchantMgt.setCorporateAddress(m.get(k).toString());
+							break;
+						case "公司编号":
+							merchant_code = m.get(k).toString();
+							szMerchantMgt.setMerchant_code(m.get(k).toString());
+							break;
+						case "楼栋编号":
+							building_number = m.get(k).toString();
+							szMerchantMgt.setBuilding_number(m.get(k).toString());
+							break;
+					}
+
+				}
+				Long count = szMerchantMgtService.countByDoorNumber(szMerchantMgt);
+				if (count != null && count > 0) {
+					continue;
+				} else if(StringUtil.isEmpty(park) || StringUtil.isEmpty(doorNumber) || StringUtil.isEmpty(building_number) || StringUtil.isEmpty(merchant_code)){
+					continue;
+				}else {
+			    
+					SysUser sysUser = (SysUser) session.getAttribute("sysUser");
+			    	if(sysUser!=null){
+				    	//审核人信息
+				    	szMerchantMgt.setExamineId(sysUser.getId());
+				    	szMerchantMgt.setExamineName(sysUser.getName());
+			    	}
+					szMerchantMgtList.add(szMerchantMgt);
+				}
+			}
+			int count = 0;
+			if(szMerchantMgtList!=null && szMerchantMgtList.size()>0)
+				count = szMerchantMgtService.batchInsert(szMerchantMgtList);
+			
+			//--------积分start--------
+			List<SzMerchantScore> scoreList = new ArrayList<SzMerchantScore>();
+			for(SzMerchantMgt szMerchantMgt:szMerchantMgtList){
+				SzMerchantScore score = new SzMerchantScore();
+				score.setMerchant_id(szMerchantMgt.getId());
+				score.setScore(SzMerchantScoreImpl.ENTER_SCORE);
+				score.setDescription(SzMerchantScoreImpl.ENTER_DESC);
+				score.setChanges(SzMerchantScoreImpl.ENTER_SCORE);
+				scoreList.add(score);
+			}
+			
+			if(scoreList!=null && scoreList.size()>0)
+				szMerchantScoreService.batchInsert(scoreList);
+			//--------积分end--------
+			
+			return count > 0 ? AjaxResponse.success("ok", count) : new AjaxResponse("BatchImport", "error", "id");
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("BatchImport SzMerchantMgt error!", e);
+			return AjaxResponse.error("error");
+		}
+	}
+	
+	@RequestMapping(value = "/update", method = RequestMethod.POST)
+	public AjaxResponse update(SzMerchantMgt szMerchantMgt, HttpSession session) {
+		
+		int count = szMerchantMgtService.update(szMerchantMgt);
+		
+		//更改用户类型
+		if(count>0){
+			SzUser szUser = new SzUser();
+			szUser.setRid(szMerchantMgt.getUserId());
+			szUser.setType(SzUser.TYPE_2);
+			szUserService.update(szUser);
+		}
+	
+		return count >0 ? AjaxResponse.success("update ok") : AjaxResponse.error("update error");
+	}
+
+}

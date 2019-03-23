@@ -1,0 +1,140 @@
+package com.mass.biz.smart.services.ConferenceRoom.controller;
+
+import com.mass.biz.news.controller.NewsController;
+import com.mass.biz.smart.services.ConferenceRoom.model.Room;
+import com.mass.biz.smart.services.ConferenceRoom.service.AppointmentService;
+import com.mass.biz.smart.services.ConferenceRoom.service.RoomService;
+import com.mass.core.utils.AjaxResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+/**
+ * @ClassName
+ * @Author 郑上进
+ * @Date 2018/7/20 15:45
+ * @Version 1.0
+ **/
+@RestController
+@RequestMapping(value = "/room")
+public class RoomController {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(NewsController.class);
+
+    @Autowired
+    private RoomService roomService;
+
+    @Autowired
+    private AppointmentService appointmentService;
+
+
+    /*后台会议室管理*/
+
+    /**
+     * 列表及条件查询
+     * @Author 郑上进
+     * @Date 14:41 2018/7/23
+     **/
+    @RequestMapping(value = "/selectPageList", method = RequestMethod.GET)
+    public AjaxResponse selectPageList(Room room,
+                                       @RequestParam(value = "page") Integer pageIndex,
+                                       @RequestParam(value = "limit") Integer pageSize) {
+        try {
+            /*Room room1 = new Room();
+            Appointment appointment =new Appointment();
+            //获取当前时间
+            Date date = new Date();
+            //定义格式
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String currentTime = simpleDateFormat.format(date);
+            //返回参数为Date
+            simpleDateFormat.parse(currentTime);
+            //获取所有已通过的申请
+            List<Appointment> applist = appointmentService.selectEntity(appointment);
+            if(applist.size()>0){
+                for(int i=0;i<applist.size();i++){
+                    Appointment appointment1=applist.get(i);
+                    String useRoomStartTime=appointment1.getUseRoomStartTime();
+                    String useRoomEndTime=appointment1.getUseRoomEndTime();
+                    Date a=simpleDateFormat.parse(useRoomStartTime);
+                    Date b=simpleDateFormat.parse(useRoomEndTime);
+                    //如果用户开始使用时间大于当前时间并且结束使用时间小于当前时间 则为正在使用
+                    if(date.before(a)==true && date.after(b)==true){
+                        room1.setId(appointment1.getId());
+                        room1.setUsageState(2);
+                        roomService.editEntity(room1);
+                    }
+                }
+            }*/
+            Long count = roomService.count(room);
+            List<Room> list = roomService.selectPageList(room, (pageIndex - 1) * pageSize, pageSize);
+            return AjaxResponse.success("ok", list, count, pageIndex);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("select sz error!", e);
+            return AjaxResponse.error("error");
+        }
+    }
+
+
+    /**
+     * 新增会议室
+     * @Author 郑上进
+     * @Date 10:50 2018/7/25
+     **/
+    @RequestMapping(value = "/addEntity",method = RequestMethod.POST)
+    public AjaxResponse addEntity(Room room){
+        try {
+            this.roomService.addEntity(room);
+            return AjaxResponse.success("ok",room);
+        }catch (Exception e){
+            e.printStackTrace();
+            LOGGER.error("insert room error!", e);
+            return AjaxResponse.error("error");
+        }
+    }
+
+
+    /**
+     * 修改会议室
+     * @Author 郑上进
+     * @Date 10:57 2018/7/25
+     **/
+    @RequestMapping(value = "/editEntity",method = RequestMethod.POST)
+    public AjaxResponse editEntity(Room room){
+        try {
+            this.roomService.editEntity(room);
+            return AjaxResponse.success("ok",room);
+        }catch (Exception e){
+            e.printStackTrace();
+            LOGGER.error("update room error!",e);
+            return AjaxResponse.error("error");
+        }
+    }
+
+
+    /**
+     * 删除会议室
+     * @Author 郑上进
+     * @Date 10:57 2018/7/25
+     **/
+    @RequestMapping(value = "/deleteEntity",method = RequestMethod.POST)
+    public AjaxResponse deleteEntity(Long id){
+        try {
+            this.roomService.deleteEntity(id);
+            return AjaxResponse.success("ok",0);
+        }catch (Exception e){
+            e.printStackTrace();
+            LOGGER.error("delete room error!",e);
+            return AjaxResponse.error("error");
+        }
+    }
+
+
+}

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.smart.property.propertyMend.dao.PropertyMendMapper">
+    <resultMap id="propertyMend" type="com.mass.biz.smart.property.propertyMend.model.PropertyMend">
+        <result property="id" column="ID" jdbcType="BIGINT"/>
+        <result property="rid" column="RID" jdbcType="BIGINT"/>
+        <result property="propertyMendAddress" column="PROPERTYMEND_ADDRESS" jdbcType="VARCHAR"/>
+        <result property="propertyMendState" column="PROPERTYMEND_STATE" jdbcType="TINYINT"/>
+        <result property="propertyMendContent" column="PROPERTYMEND_CONTENT" jdbcType="VARCHAR"/>
+        <result property="propertyMendImage" column="PROPERTYMEND_IMAGE" jdbcType="VARCHAR"/>
+        <result property="evaluate" column="EVALUATE" jdbcType="VARCHAR"/>
+        <result property="state" column="STATE" jdbcType="TINYINT"/>
+        <result property="status" column="STATUS" jdbcType="TINYINT"/>
+        <result property="createTime" column="CREATE_TIME" jdbcType="VARCHAR"/>
+        <result property="endTime" column="END_TIME" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="DEL_FLAG" jdbcType="TINYINT"/>
+        
+        
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="idCode" column="id_code" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        
+    </resultMap>
+
+    <sql id="baseSql">
+        
+    </sql>
+
+    
+    <select id="selectPageList" resultMap="propertyMend">
+       SELECT
+			t1.*, t2.`name`,
+			t2.id_code,
+			t2.phone
+		FROM
+			sz_propertymend t1
+		LEFT JOIN sz_user t2 ON t1.rid = t2.rid
+		WHERE t1.DEL_FLAG =0
+        <if test="propertyMend !=null ">
+       		<if test="propertyMend.name !=null and propertyMend.name !='' ">
+                AND t2.NAME LIKE CONCAT("%", #{propertyMend.name, jdbcType=VARCHAR}, "%")
+            </if> 
+            <if test="propertyMend.idCode!=null and propertyMend.idCode != '' ">
+                AND t2.id_code = #{propertyMend.idCode, jdbcType=VARCHAR}
+            </if>
+            <if test="propertyMend.phone!=null and propertyMend.phone != '' ">
+                AND t2.id_code = #{propertyMend.idCode, jdbcType=VARCHAR}
+            </if>
+            <if test="propertyMend.state !=null  ">
+                AND t1.STATE = #{propertyMend.state, jdbcType=TINYINT}
+            </if>
+            <if test="propertyMend.propertyMendState !=null  ">
+                AND t1.PROPERTYMEND_STATE = #{propertyMend.propertyMendState, jdbcType=TINYINT}
+            </if>
+            <if test="propertyMend.createTimeBefore !=null and propertyMend.createTimeBefore !='' ">
+            	AND <![CDATA[DATE_FORMAT(t1.CREATE_TIME,'%Y-%m-%d') >=  DATE_FORMAT(#{propertyMend.createTimeBefore},'%Y-%m-%d')]]>
+            </if>
+            <if test="propertyMend.createTimeAfter !=null and propertyMend.createTimeAfter!='' ">
+            	AND <![CDATA[DATE_FORMAT(t1.CREATE_TIME,'%Y-%m-%d') <=  DATE_FORMAT(#{propertyMend.createTimeAfter},'%Y-%m-%d')]]>
+            </if>
+        </if>
+        ORDER BY ID
+        LIMIT #{pageIndex},#{pageSize}
+    </select>
+    
+    <select id="count" resultType="java.lang.Long" parameterType="com.mass.biz.smart.property.propertyMend.model.PropertyMend">
+       SELECT
+		COUNT(0)
+		FROM
+			sz_propertymend t1
+		LEFT JOIN sz_user t2 ON t1.rid = t2.rid
+		WHERE t1.DEL_FLAG =0
+        	<if test="propertyMend.name !=null and propertyMend.name !='' ">
+                AND t2.NAME LIKE CONCAT("%", #{propertyMend.name, jdbcType=VARCHAR}, "%")
+            </if> 
+            <if test="propertyMend.idCode!=null and propertyMend.idCode != '' ">
+                AND t2.id_code = #{propertyMend.idCode, jdbcType=VARCHAR}
+            </if>
+            <if test="propertyMend.phone!=null and propertyMend.phone != '' ">
+                AND t2.id_code = #{propertyMend.idCode, jdbcType=VARCHAR}
+            </if>
+            <if test="propertyMend.state !=null  ">
+                AND t1.STATE = #{propertyMend.state, jdbcType=TINYINT}
+            </if>
+            <if test="propertyMend.propertyMendState !=null  ">
+                AND t1.PROPERTYMEND_STATE = #{propertyMend.propertyMendState, jdbcType=TINYINT}
+            </if>
+            <if test="propertyMend.createTimeBefore !=null and propertyMend.createTimeBefore !='' ">
+            	AND <![CDATA[t1.CREATE_TIME >=  #{propertyMend.createTimeBefore}]]>
+            </if>
+            <if test="propertyMend.createTimeAfter !=null and propertyMend.createTimeAfter!='' ">
+            	AND <![CDATA[t1.CREATE_TIME <=  #{propertyMend.createTimeAfter}]]>
+            </if>
+    </select>
+ 
+    <select id="getPropertyMendById" resultMap="propertyMend">
+        SELECT
+			t1.*, t2.`name`,
+			t2.id_code,
+			t2.phone
+		FROM
+			sz_propertymend t1
+		LEFT JOIN sz_user t2 ON t1.rid = t2.rid
+		WHERE t1.DEL_FLAG =0 AND ID = #{id,jdbcType=BIGINT}
+    </select>
+    
+    <insert  id="addPropertyMend" useGeneratedKeys="true" keyProperty="id" parameterType="com.mass.biz.smart.property.propertyMend.model.PropertyMend">
+        INSERT INTO	sz_propertymend
+         (
+         	RID,PROPERTYMEND_ADDRESS,PROPERTYMEND_STATE,PROPERTYMEND_CONTENT,PROPERTYMEND_IMAGE,STATE,STATUS,CREATE_TIME,DEL_FLAG
+	        )
+     	VALUES (
+	        #{rid,jdbcType=BIGINT},
+	        #{propertyMendAddress,jdbcType=VARCHAR},
+	        #{propertyMendState,jdbcType=TINYINT},
+	        #{propertyMendContent,jdbcType=VARCHAR},
+	        #{propertyMendImage,jdbcType=VARCHAR},
+	        0,
+	        #{status,jdbcType=TINYINT},
+	       	NOW(),
+	        0
+	        );
+    </insert>
+
+    <update id="editPropertyMend" parameterType="com.mass.biz.smart.property.propertyMend.model.PropertyMend">
+        UPDATE sz_propertymend    
+        <set>
+        	<if test="rid !=null ">RID=#{rid,jdbcType=BIGINT},</if>
+        	<if test="propertyMendAddress !=null and propertyMendAddress !=''">PROPERTYMEND_ADDRESS=#{propertyMendAddress,jdbcType=VARCHAR},</if>
+        	<if test="propertyMendState !=null ">PROPERTYMEND_STATE=#{propertyMendState,jdbcType=TINYINT},</if>
+     	    <if test="propertyMendContent !=null and propertyMendContent !=''">PROPERTYMEND_CONTENT=#{propertyMendContent,jdbcType=VARCHAR},</if>
+            <if test="propertyMendImage !=null and propertyMendImage !=''">PROPERTYMEND_IMAGE=#{propertyMendImage,jdbcType=VARCHAR},</if>
+            <if test="evaluate !=null and evaluate !=''">EVALUATE=#{evaluate,jdbcType=VARCHAR},</if>
+            <if test="state !=null ">STATE =#{state,jdbcType=TINYINT},</if>
+            <if test="endTime !=null and endTime != ''  ">END_TIME =#{endTime,jdbcType=VARCHAR},</if>
+            <if test="status !=null ">STATUS =#{status,jdbcType=TINYINT},</if>
+            CREATE_TIME=NOW(),        
+        </set>
+        WHERE ID=#{id,jdbcType=BIGINT}
+    </update>
+    
+    <update id="delPropertyMend" parameterType="java.lang.Long">
+        UPDATE sz_propertymend
+        SET DEL_FLAG = 1
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+<!--     分页查询所有工作人员信息 -->
+    <select id="selectUserList" resultMap="propertyMend">
+       SELECT
+			t2.name,t2.rid,t2.id_code,t2.phone,
+			(select pu.pid from sz_propertymend_user pu where pu.pid=#{propertyMend.id,jdbcType=BIGINT} and pu.user_id=t2.rid and pu.type=0) as id
+		FROM sz_user t2 
+		WHERE t2.is_delete =0
+		and t2.type = 11
+   		<if test="propertyMend.name !=null and propertyMend.name !='' ">
+            AND t2.NAME LIKE CONCAT("%", #{propertyMend.name, jdbcType=VARCHAR}, "%")
+        </if> 
+        <if test="propertyMend.idCode!=null and propertyMend.idCode != '' ">
+            AND t2.id_code = #{propertyMend.idCode, jdbcType=VARCHAR}
+        </if>
+        ORDER BY ID
+        LIMIT #{pageIndex},#{pageSize}
+    </select>
+    
+    <select id="userCount" resultType="java.lang.Long" parameterType="com.mass.biz.smart.property.propertyMend.model.PropertyMend">
+       SELECT
+			count(0)
+		FROM sz_user t2 
+		WHERE t2.is_delete =0
+		and t2.type = 11
+        	<if test="propertyMend.name !=null and propertyMend.name !='' ">
+            	AND t2.NAME LIKE CONCAT("%", #{propertyMend.name, jdbcType=VARCHAR}, "%")
+	        </if> 
+	        <if test="propertyMend.idCode!=null and propertyMend.idCode != '' ">
+	            AND t2.id_code = #{propertyMend.idCode, jdbcType=VARCHAR}
+	        </if>
+    </select>
+    
+    <insert  id="addMendUser" keyProperty="id" parameterType="com.mass.biz.smart.property.propertyMend.model.PropertyMend">
+        INSERT INTO	sz_propertymend_user
+         (
+         	pid,name,phone,id_code,CREATE_TIME,DEL_FLAG,user_id,type
+	        )
+     	VALUES (
+	        #{id,jdbcType=BIGINT},
+	        #{name,jdbcType=VARCHAR},
+	        #{phone,jdbcType=VARCHAR},
+	        #{idCode,jdbcType=VARCHAR},
+	       	NOW(),
+	        0,
+	        #{rid,jdbcType=BIGINT},
+	        0
+	        );
+    </insert>
+
+ 	<select id="selectMendStart" resultMap="propertyMend">
+		SELECT t1.* FROM sz_propertymend t1 
+			LEFT JOIN sz_propertymend_user t2 ON t1.ID = t2.PID
+			WHERE t1.DEL_FLAG = 0
+			and t2.USER_ID =#{rid,jdbcType=BIGINT}
+			AND t2.TYPE = 0
+			AND t1.STATE = 0 
+			OR t1.STATE = 1
+			GROUP BY t1.ID
+			ORDER BY t2.CREATE_TIME DESC
+ 	</select>
+ 	
+ 	<select id="selectMendEnd" resultMap="propertyMend">
+ 		SELECT t1.* FROM sz_propertymend t1 
+			LEFT JOIN sz_propertymend_user t2 ON t1.ID = t2.PID
+			WHERE t1.DEL_FLAG = 0
+			and t2.USER_ID =#{rid,jdbcType=BIGINT}
+			AND t2.TYPE = 0
+			AND <![CDATA[t1.STATE <> 0]]> 
+			AND <![CDATA[t1.STATE <> 1]]>
+			GROUP BY t1.ID
+			ORDER BY t2.CREATE_TIME DESC
+ 	</select>
+ 	
+	<select id="getPropertyMendByRid" resultMap="propertyMend">
+       SELECT
+			*
+		FROM
+			sz_propertymend
+		WHERE
+			del_flag = 0
+		AND rid = #{rid,jdbcType=BIGINT}
+   </select>
+   
+   <select id="selectAdminMendStart" resultMap="propertyMend">
+ 		SELECT
+			*
+		FROM
+			sz_propertymend
+		WHERE
+			del_flag = 0
+		AND state = 0
+		OR state = 1
+ 	</select>
+ 	
+ 	<select id="selectAdminMendEnd" resultMap="propertyMend">
+		 SELECT
+			*
+		FROM
+			sz_propertymend
+		WHERE
+			del_flag = 0
+		AND <![CDATA[state <> 0]]>
+		AND <![CDATA[state <> 1]]>
+ 	</select>
+   
+</mapper>

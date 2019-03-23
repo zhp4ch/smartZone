@@ -1,0 +1,133 @@
+package com.mass.biz.smart.property.message.model; 
+
+import java.util.Date;
+
+/**
+ *
+ * 项目名称：anyanghl-ht
+ * 类名称：Message
+ * 类描述：消息实体类
+ * 创建人：yihai Zhao
+ * 创建时间：2018年7月13日 下午3:31:53
+ * 修改人：yihai Zhao
+ * 修改时间：2018年7月13日 下午3:31:53
+ * 
+ * @version
+ *
+ */
+public class  Message{
+	private Long id;			//主键
+	private Long manyId;		//外键
+	private Long userId;		//接收人的用户id
+	private Long sendId;		//发送人的用户id
+	private String sendName;	//发送人姓名
+	private String sendHead;	//发送人头像
+	private Integer msgState;	//消息类型 -->1-推送商户信息类  2-合同到期提醒 3-新闻推送 4-物业费催收 5- 管理员推送给监管人员
+	private String msgContent;	//消息内容
+	private String newImage;	//新闻图片
+	private Integer status;		//用户身份失败 1-个人 2-商户 3-管理员
+	private Integer readFlag;	//阅读标记 -->0-未读 1-已读
+	private Date readTime;		//阅读时间
+	private Date createTime;	//创建时间
+	private Integer delFlag;	//删除标记
+	private Long sumCount;		//未读条数 分类统计--sql查询接收字段
+	private Integer classify;	//推送消息--sql查询接收字段
+	
+	
+	public Integer getClassify() {
+		return classify;
+	}
+	public void setClassify(Integer classify) {
+		this.classify = classify;
+	}
+	public Long getSumCount() {
+		return sumCount;
+	}
+	public void setSumCount(Long sumCount) {
+		this.sumCount = sumCount;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public String getNewImage() {
+		return newImage;
+	}
+	public void setNewImage(String newImage) {
+		this.newImage = newImage;
+	}
+	public Integer getStatus() {
+		return status;
+	}
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
+	public Long getManyId() {
+		return manyId;
+	}
+	public void setManyId(Long manyId) {
+		this.manyId = manyId;
+	}
+	public Long getUserId() {
+		return userId;
+	}
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+	public Long getSendId() {
+		return sendId;
+	}
+	public void setSendId(Long sendId) {
+		this.sendId = sendId;
+	}
+	public String getSendName() {
+		return sendName;
+	}
+	public void setSendName(String sendName) {
+		this.sendName = sendName;
+	}
+	public String getSendHead() {
+		return sendHead;
+	}
+	public void setSendHead(String sendHead) {
+		this.sendHead = sendHead;
+	}
+	public Integer getMsgState() {
+		return msgState;
+	}
+	public void setMsgState(Integer msgState) {
+		this.msgState = msgState;
+	}
+	public String getMsgContent() {
+		return msgContent;
+	}
+	public void setMsgContent(String msgContent) {
+		this.msgContent = msgContent;
+	}
+	public Integer getReadFlag() {
+		return readFlag;
+	}
+	public void setReadFlag(Integer readFlag) {
+		this.readFlag = readFlag;
+	}
+	public Date getReadTime() {
+		return readTime;
+	}
+	public void setReadTime(Date readTime) {
+		this.readTime = readTime;
+	}
+	public Date getCreateTime() {
+		return createTime;
+	}
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+	public Integer getDelFlag() {
+		return delFlag;
+	}
+	public void setDelFlag(Integer delFlag) {
+		this.delFlag = delFlag;
+	}
+}

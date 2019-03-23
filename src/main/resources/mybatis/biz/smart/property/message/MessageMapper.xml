@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.smart.property.message.dao.MessageMapper">
+    <resultMap id="message" type="com.mass.biz.smart.property.message.model.Message">
+        <result property="id" column="ID" jdbcType="BIGINT"/>
+        <result property="userId" column="USER_ID" jdbcType="BIGINT"/>
+        <result property="manyId" column="MANY_ID" jdbcType="BIGINT"/>
+        <result property="msgContent" column="MSG_CONTENT" jdbcType="VARCHAR"/>
+        <result property="sendName" column="SEND_NAME" jdbcType="VARCHAR"/>
+        <result property="sendHead" column="SEND_HEAD" jdbcType="VARCHAR"/>
+        <result property="newImage" column="NEW_IMAGE" jdbcType="VARCHAR"/>
+        <result property="status" column="STATUS" jdbcType="TINYINT"/>
+        <result property="createTime" column="CREATE_TIME" jdbcType="TIMESTAMP"/>
+        <result property="sendId" column="SEND_ID" jdbcType="BIGINT"/>
+     	<result property="msgState" column="MSG_STATE" jdbcType="TINYINT"/>
+        <result property="delFlag" column="DEL_FLAG" jdbcType="TINYINT"/>
+        <result property="readFlag" column="READ_FLAG" jdbcType="TINYINT"/>
+        <result property="readTime" column="READ_TIME" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="baseSql">
+        
+    </sql>
+  
+    <select id="selectMessageList" parameterType="com.mass.biz.smart.property.message.model.Message" resultMap="message">			
+		SELECT
+				ID,MANY_ID,USER_ID,SEND_ID,SEND_NAME,SEND_HEAD,MSG_STATE,MSG_CONTENT,NEW_IMAGE,`STATUS`,READ_FLAG,READ_TIME,CREATE_TIME,DEL_FLAG,
+		SUM(count) AS sumCount
+			FROM
+				(
+					SELECT
+						ID,MANY_ID,USER_ID,SEND_ID,SEND_NAME,SEND_HEAD,MSG_STATE,MSG_CONTENT,NEW_IMAGE,`STATUS`,READ_FLAG,READ_TIME,CREATE_TIME,DEL_FLAG,
+						(CASE WHEN read_flag=0 then 1 when read_flag=1 then 0 END) as count
+					FROM
+						sz_message
+					WHERE
+						user_id = #{userId,jdbcType=BIGINT}
+					AND `STATUS` =#{status,jdbcType=TINYINT}
+					AND MSG_STATE = 3
+					AND del_flag=0
+					ORDER BY
+						ID DESC		
+				) AS a
+					GROUP BY
+						msg_state
+				
+
+				UNION
+
+		SELECT
+			ID,MANY_ID,USER_ID,SEND_ID,SEND_NAME,SEND_HEAD,MSG_STATE,MSG_CONTENT,NEW_IMAGE,`STATUS`,READ_FLAG,READ_TIME,CREATE_TIME,DEL_FLAG,
+		SUM(count) AS sumCount
+			FROM
+	
+				(		SELECT
+								ID,MANY_ID,USER_ID,SEND_ID,SEND_NAME,SEND_HEAD,MSG_STATE,MSG_CONTENT,NEW_IMAGE,`STATUS`,READ_FLAG,READ_TIME,CREATE_TIME,DEL_FLAG,
+								(CASE WHEN read_flag=0 THEN 1 WHEN read_flag =1 THEN 0    END) as count
+					FROM 
+							sz_message
+					WHERE
+							MSG_STATE =5
+					AND 
+							del_flag =0
+					AND
+							user_id =#{userId,jdbcType=BIGINT}
+					AND		
+						    `STATUS` =#{status,jdbcType=TINYINT}
+				  ) as b
+		GROUP BY
+				send_id
+						
+				UNION
+					
+				SELECT
+					ID,MANY_ID,USER_ID,SEND_ID,SEND_NAME,SEND_HEAD,MSG_STATE,MSG_CONTENT,NEW_IMAGE,`STATUS`,READ_FLAG,READ_TIME,CREATE_TIME,DEL_FLAG,
+					(case WHEN read_flag =0 then 1 WHEN read_flag =1 THEN 0 END) as sumCount
+				FROM
+					sz_message
+				WHERE
+					USER_ID = #{userId,jdbcType=BIGINT}
+				AND `STATUS` =#{status,jdbcType=TINYINT}
+				AND DEL_FLAG = 0
+				AND <![CDATA[MSG_STATE <> 3]]>
+				AND <![CDATA[MSG_STATE <> 5]]>
+				ORDER BY	
+					CREATE_TIME DESC
+    </select>  
+    
+    <select id="selectMessageDetial" parameterType="com.mass.biz.smart.property.message.model.Message" resultMap="message">
+    	SELECT
+				T1.*,(case when T1.user_id = #{userId,jdbcType=BIGINT} then 1 when T1.send_id = #{sendId,jdbcType=BIGINT} then 2 end) as classify
+			FROM
+				sz_message T1
+			WHERE
+				T1.DEL_FLAG = 0
+				AND STATUS = #{status,jdbcType=TINYINT}
+				AND( T1.USER_ID = #{userId,jdbcType=BIGINT}
+				AND  T1.send_id = #{sendId,jdbcType=BIGINT})
+				OR ( T1.send_id = #{sendId,jdbcType=BIGINT}
+				AND  T1.USER_ID = #{userId,jdbcType=BIGINT})
+			ORDER BY
+				T1.CREATE_TIME
+    </select>	
+
+    <insert  id="addMessage" useGeneratedKeys="true" keyProperty="id" parameterType="com.mass.biz.smart.property.message.model.Message">
+        INSERT INTO sz_message(
+	        MANY_ID,USER_ID,SEND_ID,SEND_HEAD,SEND_NAME,MSG_STATE,MSG_CONTENT,READ_FLAG,READ_TIME,CREATE_TIME,DEL_FLAG,NEW_IMAGE,STATUS)
+     	VALUES (
+	        #{manyId,jdbcType=BIGINT},
+	        #{userId,jdbcType=BIGINT},
+	        #{sendId,jdbcType=BIGINT},
+	        #{sendHead,jdbcType=VARCHAR},
+	        #{sendName,jdbcType=VARCHAR},
+	        #{msgState,jdbcType=TINYINT},
+	        #{msgContent,jdbcType=VARCHAR},
+	        0,
+	        #{readTime,jdbcType=TIMESTAMP},
+	        NOW(),
+	        0,
+	        #{newImage,jdbcType=VARCHAR},
+	        #{status,jdbcType=TINYINT}
+	       )
+    </insert>
+	
+	<update id="editMessageById" parameterType="java.lang.Long">
+        UPDATE sz_message	
+        SET 
+        	READ_FLAG = 1 
+        AND
+        	READ_TIME = NOW()
+         
+        WHERE ID = #{id,jdbcType=BIGINT}
+        AND DEL_FLAG = 0
+    </update>
+    
+    <update id="editMessageByUserId" parameterType="com.mass.biz.smart.property.message.model.Message">
+        UPDATE sz_message
+			<set>
+				READ_FLAG = 1,
+				READ_TIME = NOW()
+			</set> 
+			WHERE
+				user_id = #{userId,jdbcType=BIGINT}
+			AND SEND_ID = #{sendId,jdbcType=BIGINT}
+			AND	STATUS = #{status,jdbcType=TINYINT}
+			AND del_flag =0
+    </update>
+  
+    <update id="delMessage" parameterType="java.lang.Long">
+        UPDATE sz_message	
+        SET DEL_FLAG = 1
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="selectReadCount" resultType="java.lang.Long" parameterType="com.mass.biz.smart.property.message.model.Message">				
+			SELECT
+				IFNULL(count(0), 0) AS count
+			FROM
+				sz_message
+			WHERE
+				USER_ID = #{userId,jdbcType=BIGINT}
+			AND read_flag = 0
+			AND del_flag = 0
+    </select>
+    
+    <select id="getMessageById" resultMap="message">
+       SELECT
+		*
+	FROM
+		sz_message
+	WHERE
+		del_flag = 0
+	AND id = #{id,jdbcType=BIGINT}
+   </select>
+   
+   <select id="selectNotReadCount" resultType="java.lang.Long" parameterType="com.mass.biz.smart.property.message.model.Message">				
+			SELECT
+				IFNULL(count(0), 0) AS count
+			FROM
+				sz_message
+			WHERE
+				USER_ID = #{userId,jdbcType=BIGINT}
+			AND read_flag = 0
+			AND del_flag = 0
+			AND msg_State=4
+    </select>
+   
+   <update id="updateReadByUserId">
+        UPDATE sz_message
+			<set>
+				READ_FLAG = 1,
+				READ_TIME = NOW()
+			</set> 
+			WHERE
+			USER_ID = #{userId,jdbcType=BIGINT}
+			AND del_flag =0
+			AND msg_State=4
+    </update>
+   
+</mapper>

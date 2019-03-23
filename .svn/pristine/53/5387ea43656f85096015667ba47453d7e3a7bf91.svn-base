@@ -1,0 +1,81 @@
+package com.mass.biz.smart.user.service.impl;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.mass.biz.smart.user.dao.SzUserMapper;
+import com.mass.biz.smart.user.model.SzUser;
+import com.mass.biz.smart.user.service.SzUserService;
+import com.mass.core.sys.file.model.FileInfoTemp;
+
+@Service
+public class SzUserServiceImpl implements SzUserService{
+	
+	@Autowired
+	private SzUserMapper szUserMapper;
+
+	@Override
+	public List<SzUser> selectPageList(SzUser szUser, Integer pageIndex, Integer pageSize) {
+		return szUserMapper.selectPageList(szUser, pageIndex, pageSize);
+	}
+
+	@Override
+	public Long count(SzUser szUser) {
+		return szUserMapper.count(szUser);
+	}
+
+	@Override
+	public SzUser getEntityById(long rid) {
+		return szUserMapper.getEntityById(rid);
+	}
+
+	@Override
+	public boolean insert(SzUser szUser) {
+		return szUserMapper.insert(szUser)>0;
+	}
+
+	@Override
+	public boolean delete(long rid,long delFlag) {
+		return szUserMapper.delete(rid,delFlag)>0;
+	}
+
+	@Override
+	public boolean update(SzUser szUser) {
+		return szUserMapper.update(szUser)>0;
+	}
+
+	@Override
+	public SzUser getEntityByOpendId(String openId) {
+		return szUserMapper.getEntityByOpendId(openId);
+	}
+
+	@Override
+	public Long countByIdCode(SzUser szUser) {
+		return szUserMapper.countByIdCode(szUser);
+	}
+
+	@Override
+	public int batchInsert(List<SzUser> szUserList) {
+		return szUserMapper.batchInsert(szUserList);
+	}
+
+	@Override
+	public int updateBatch(List<SzUser> list) {
+		return szUserMapper.updateBatch(list);
+	}
+
+	@Override
+	public List<SzUser> selectListByCondition(SzUser szUser) {
+		return szUserMapper.selectListByCondition(szUser);
+	}
+
+	@Override
+	public SzUser getEntityByIdCard(String id_code) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

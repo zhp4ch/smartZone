@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mass.biz.smart.services.Increment.dao.IncrementMapper">
+
+    <resultMap id="Increment" type="com.mass.biz.smart.services.Increment.model.Increment">
+        <result column="ID" property="id" jdbcType="BIGINT"/>
+        <result column="TITLE" property="title" jdbcType="VARCHAR"/>
+        <result column="CONTENT" property="content" jdbcType="VARCHAR"/>
+        <result column="APPLY_USER_ID" property="applyUserId" jdbcType="BIGINT"/>
+        <result column="PHONE" property="phone" jdbcType="VARCHAR"/>
+        <result column="INCREMENT_STATE" property="incrementState" jdbcType="BIGINT"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="DEL_FLAG" property="delFlag" jdbcType="BIGINT"/>
+
+        <result column="NAME" property="applyName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--增值服务表-->
+    <sql id="baseSql">
+        T1.ID, T1.TITLE, T1.CONTENT, T1.APPLY_USER_ID, T1.PHONE, T1.INCREMENT_STATE, T1.CREATE_TIME, T1.DEL_FLAG
+    </sql>
+
+    <!--后台管理端-->
+
+    <!-- 分页查询及总数、多条件查询 -->
+    <select id="selectPageList" resultMap="Increment">
+        SELECT
+        <include refid="baseSql"/>,
+        T2.NAME
+        FROM
+        sz_increment T1
+        LEFT JOIN sz_user T2
+        ON T1.APPLY_USER_ID = T2.RID
+        WHERE
+        T1.DEL_FLAG = 0
+        <if test="searchParams !=null ">
+
+            <if test="searchParams.title !=null and searchParams.title !=''">
+                AND T1.TITLE LIKE CONCAT("%", #{searchParams.title, jdbcType=VARCHAR}, "%")
+            </if>
+
+            <if test="searchParams.incrementState !=null ">
+                AND T1.INCREMENT_STATE = #{searchParams.incrementState, jdbcType=BIGINT}
+            </if>
+
+        </if>
+        ORDER BY T1.CREATE_TIME DESC
+        LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+    </select>
+
+    <!--统计总条数-->
+    <select id="count" resultType="java.lang.Long"
+            parameterType="com.mass.biz.smart.services.Increment.model.Increment">
+        SELECT
+        COUNT(0)
+        FROM
+        sz_increment T1
+        WHERE
+        T1.DEL_FLAG=0
+
+        <if test="title !=null and title !=''">
+            AND T1.TITLE LIKE CONCAT
+            ("%", #{title, jdbcType=VARCHAR}, "%")
+        </if>
+
+        <if test="incrementState !=null">
+            AND T1.INCREMENT_STATE = #{incrementState, jdbcType=BIGINT}
+        </if>
+
+    </select>
+
+
+    <!--新增数据-->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.mass.biz.smart.services.Increment.model.Increment">
+        INSERT sz_increment
+        (
+            TITLE,
+            CONTENT,
+            APPLY_USER_ID,
+            PHONE,
+            INCREMENT_STATE,
+            CREATE_TIME,
+            DEL_FLAG
+        )
+        VALUES (
+            #{title,jdbcType=VARCHAR},
+            #{content,jdbcType=VARCHAR},
+            #{applyUserId,jdbcType=BIGINT},
+            #{phone,jdbcType=VARCHAR},
+            0,
+            NOW(),
+            0
+        )
+    </insert>
+
+    <!--修改数据-->
+    <update id="update" parameterType="com.mass.biz.smart.services.Increment.model.Increment">
+        UPDATE sz_increment
+        <set>
+            <if test="incrementState !=null">INCREMENT_STATE=#{incrementState,jdbcType=BIGINT},</if>
+        </set>
+        WHERE ID=#{id,jdbcType=BIGINT}
+    </update>
+
+
+    <!--删除数据-->
+    <update id="delete" parameterType="java.lang.Long">
+        UPDATE sz_increment
+        SET DEL_FLAG = 1
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+
+
+    <!--微信端-->
+
+    <!--微信-根据公司id查询该用户租赁合同-->
+    <!--<select id="getCompanyIdByZn" resultMap="Contract">-->
+        <!--SELECT-->
+        <!--<include refid="baseSql"/>-->
+        <!--FROM-->
+        <!--sz_contract T1-->
+        <!--WHERE-->
+        <!--T1.DEL_FLAG = 0-->
+        <!--AND-->
+        <!--T1.CONTRACT_TYPE =0-->
+        <!--AND-->
+        <!--T1.COMPANY_ID = #{companyId,jdbcType=BIGINT}-->
+    <!--</select>-->
+
+</mapper>

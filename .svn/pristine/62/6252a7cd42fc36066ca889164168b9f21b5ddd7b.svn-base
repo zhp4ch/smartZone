@@ -1,0 +1,71 @@
+package com.mass.biz.smart.property.message.controller; 
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import com.mass.biz.smart.property.message.service.MessageService;
+import com.mass.core.utils.AjaxResponse;
+
+/**
+ *
+ * 项目名称：smartZone-ht
+ * 类名称：MessageWxController
+ * 类描述：消息控制层
+ * 创建人：zx
+ * 创建时间：2018年8月14日 上午10:15:23
+ * 
+ * @version
+ *
+ */
+@RestController
+@RequestMapping("/wx/message")
+public class MessageWxController {
+	
+	private final static Logger LOGGER = LoggerFactory.getLogger(MessageWxController.class);
+	
+	@Autowired
+	private MessageService messageService;
+	/**
+	 * 
+	* @Title: selectNotReadCount 
+	* @Description: 未读催收消息总条数 
+	* @param @param userId
+	* @param @return    入参
+	* @return AjaxResponse    返回类型
+	* @author zx   
+	* @throws
+	* @date 2018年8月14日 14:08:36
+	 */
+	@RequestMapping("/selectNotReadCount")
+	public AjaxResponse selectNotReadCount(@RequestParam("userId")Long userId){
+		try {
+			 long count = this.messageService.selectNotReadCount(userId);
+			 return AjaxResponse.success("selectReadCount ok", count);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("selectReadCount error");
+			return AjaxResponse.error("selectReadCount error");
+		}
+	}
+	
+	/**
+	 * 
+	* @Title: updateReadByUserId 
+	* @Description: 根据用户id修改所有消息为已读 
+	* @param @param userId
+	* @author zx  
+	* @date 2018年8月14日  10:25:12 
+	 */
+	@RequestMapping("/updateReadByUserId")
+	public void updateReadByUserId(@RequestParam("userId")Long userId){
+		try {
+			 this.messageService.updateReadByUserId(userId);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("selectReadCount error");
+		}
+	}
+}

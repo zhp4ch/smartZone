@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mass.biz.smart.merchant.dao.SzMerchantMapper">
+
+    <resultMap id="szMerchant" type="com.mass.biz.smart.merchant.model.SzMerchant">
+        <result column="ID" property="id" jdbcType="BIGINT"/>
+        <result column="USER_ID" property="userId" jdbcType="BIGINT"/>
+        <result column="USER_NAME" property="userName" jdbcType="VARCHAR"/>
+        <result column="REPRESENTATIVE_NAME" property="representativeName" jdbcType="VARCHAR"/>
+        <result column="CORPORATE_NAME" property="corporateName" jdbcType="VARCHAR"/>
+        <result column="EXAMINE_ID" property="examineId" jdbcType="BIGINT"/>
+        <result column="EXAMINE_NAME" property="examineName" jdbcType="VARCHAR"/>
+        <result column="EXAMINE_STATE" property="examineState" jdbcType="BIGINT"/>
+        <result column="EXAMINE_CONTENT" property="examineContent" jdbcType="VARCHAR"/>
+        <result column="MERCHANT_STATE" property="merchantState" jdbcType="BIGINT"/>
+        <result column="FLOW_PICTURE_URL" property="flowPictureUrl" jdbcType="VARCHAR"/>
+        <result column="APTITUDE_PICTURE_URL" property="aptitudePictureUrl" jdbcType="VARCHAR"/>
+        <result column="CONTRACT_PICTURE_URL" property="contractPictureUrl" jdbcType="VARCHAR"/>
+        <result column="PAY_PICTURE_URL" property="payPictureUrl" jdbcType="VARCHAR"/>
+        <result column="FILEINFO_ID" property="fileInfoId" jdbcType="BIGINT"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="DEL_FLAG" property="delFlag" jdbcType="BIGINT"/>
+        <result column="PAY_PICTURE_URL" property="payPictureUrl" jdbcType="VARCHAR"/>
+        <result column="PAY_PICTURE_URL" property="payPictureUrl" jdbcType="VARCHAR"/>
+        <result column="EXAMINE_OK_TIME" property="examineOkTime" jdbcType="VARCHAR"/>
+        <result column="CORPORATE_ADDRESS" property="corporateAddress" jdbcType="VARCHAR"/>
+        <result column="DOOR_NUMBER" property="doorNumber" jdbcType="VARCHAR"/>
+        <result column="PARK" property="park" jdbcType="VARCHAR"/>
+        <result column="ABBREVIATION" property="abbreviation" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 流程管理 -->
+
+    <!-- 查询流程简介 -->
+    <select id="getFlowById" resultMap="szMerchant">
+        SELECT
+            ID,
+            FLOW_PICTURE_URL
+        FROM SZ_FLOW
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </select>
+
+    <!-- 修改流程图片 -->
+    <update id="updateFlow" parameterType="com.mass.biz.smart.merchant.model.SzMerchant">
+        UPDATE
+        SZ_FLOW
+        <set>
+            <if test="flowPictureUrl != null">FLOW_PICTURE_URL=#{flowPictureUrl,jdbcType=VARCHAR},</if>
+        </set>
+        WHERE ID=1
+    </update>
+
+
+    <!-- 入驻管理 -->
+
+    <sql id="baseSql">
+        T1.ID, T1.USER_ID, T1.REPRESENTATIVE_NAME, T1.CORPORATE_NAME, T1.CORPORATE_ADDRESS,
+        T1.DOOR_NUMBER, T1.EXAMINE_ID, T1.EXAMINE_STATE, T1.MERCHANT_STATE, T1.EXAMINE_CONTENT,
+        T1.APTITUDE_PICTURE_URL, T1.CONTRACT_PICTURE_URL, T1.PAY_PICTURE_URL, T1.FILEINFO_ID,
+        T1.CREATE_TIME, T1.EXAMINE_OK_TIME, T1.DEL_FLAG, T1.PARK, T1.ABBREVIATION
+    </sql>
+
+
+    <!-- 审核管理分页查询及总数 -->
+    <select id="selectPageList" resultMap="szMerchant">
+        SELECT
+        <include refid="baseSql"/>,
+        T2.NAME AS USER_NAME,T3.NAME AS EXAMINE_NAME
+        FROM
+        sz_merchant T1
+        LEFT JOIN sz_user T2 ON T1.USER_ID = T2.RID
+        LEFT JOIN t_sys_user T3 ON T1.EXAMINE_ID = T3.ID
+        WHERE
+        T1.DEL_FLAG = 0
+        <if test="searchParams !=null ">
+
+            <if test="searchParams.corporateName !=null and searchParams.corporateName !=''">
+                AND T1.CORPORATE_NAME LIKE CONCAT("%", #{searchParams.corporateName, jdbcType=VARCHAR}, "%")
+            </if>
+
+            <if test="searchParams.representativeName !=null and searchParams.representativeName !=''">
+                AND T1.REPRESENTATIVE_NAME LIKE CONCAT("%", #{searchParams.representativeName, jdbcType=VARCHAR}, "%")
+            </if>
+
+            <if test="searchParams.examineState !=null">
+                AND T1.EXAMINE_STATE = #{searchParams.examineState, jdbcType=TINYINT}
+            </if>
+
+        </if>
+        ORDER BY T1.CREATE_TIME DESC
+        LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+    </select>
+    <select id="count" resultType="java.lang.Long" parameterType="com.mass.biz.smart.merchant.model.SzMerchant">
+        SELECT
+        COUNT(0)
+        FROM
+        sz_merchant T1
+        WHERE
+        T1.DEL_FLAG=0
+
+        <if test="corporateName !=null and corporateName !=''">
+            AND T1.CORPORATE_NAME LIKE CONCAT("%", #{corporateName, jdbcType=VARCHAR}, "%")
+        </if>
+
+        <if test="representativeName !=null and representativeName !=''">
+            AND T1.REPRESENTATIVE_NAME LIKE CONCAT("%", #{representativeName, jdbcType=VARCHAR}, "%")
+        </if>
+
+        <if test="examineState !=null">
+            AND T1.EXAMINE_STATE = #{examineState, jdbcType=TINYINT}
+        </if>
+
+    </select>
+
+    <!-- 根据id查询数据 -->
+    <select id="getEntityById" resultMap="szMerchant">
+        SELECT
+        <include refid="baseSql"/>,
+        T2.NAME AS USER_NAME,T3.NAME AS EXAMINE_NAME
+        FROM
+        sz_merchant T1,sz_user T2,t_sys_user T3
+        WHERE
+        T1.USER_ID=T2.RID
+        AND
+        T1.EXAMINE_ID=T3.ID
+        AND
+        T1.ID=#{id,jdbcType=BIGINT}
+        AND
+        T1.DEL_FLAG = 0
+    </select>
+
+    <!--新增数据(用户新增)-->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.mass.biz.smart.merchant.model.SzMerchant">
+        INSERT sz_merchant
+        (
+            USER_ID,
+            USER_NAME,
+            REPRESENTATIVE_NAME,
+            CORPORATE_NAME,
+            CORPORATE_ADDRESS,
+            DOOR_NUMBER,
+            PARK,
+            ABBREVIATION,
+            EXAMINE_STATE,
+            MERCHANT_STATE,
+            APTITUDE_PICTURE_URL,
+            CONTRACT_PICTURE_URL,
+            PAY_PICTURE_URL,
+            CREATE_TIME,
+            DEL_FLAG
+        )
+        VALUES (
+            #{userId,jdbcType=BIGINT},
+            #{userName,jdbcType=VARCHAR},
+            #{representativeName,jdbcType=VARCHAR},
+            #{corporateName,jdbcType=VARCHAR},
+            #{corporateAddress,jdbcType=VARCHAR},
+            #{doorNumber,jdbcType=VARCHAR},
+            #{park,jdbcType=VARCHAR},
+            #{abbreviation,jdbcType=VARCHAR},
+            0,
+            0,
+            #{aptitudePictureUrl,jdbcType=VARCHAR},
+            #{contractPictureUrl,jdbcType=VARCHAR},
+            #{payPictureUrl,jdbcType=VARCHAR},
+            NOW(),
+            0
+        )
+    </insert>
+
+    <!--修改数据(审核)-->
+    <update id="update" parameterType="com.mass.biz.smart.merchant.model.SzMerchant">
+        UPDATE sz_merchant
+        <set>
+            <if test="examineId !=null and examineId !=''">EXAMINE_ID=#{examineId,jdbcType=BIGINT},</if>
+            <if test="examineState !=null and examineState !=''">EXAMINE_STATE=#{examineState,jdbcType=BIGINT},</if>
+            <if test="examineContent != null and examineContent!='' ">EXAMINE_CONTENT=#{examineContent,jdbcType=VARCHAR},</if>
+            <if test="merchantState !=null and merchantState !=-1">MERCHANT_STATE=#{merchantState,jdbcType=BIGINT},</if>
+            <if test="examineOkTime != null and examineOkTime!='' ">EXAMINE_OK_TIME=#{examineOkTime,jdbcType=VARCHAR},
+            </if>
+        </set>
+        WHERE ID=#{id,jdbcType=BIGINT}
+    </update>
+
+    <!--删除数据-->
+    <update id="delete" parameterType="java.lang.Long">
+        UPDATE sz_merchant
+        SET DEL_FLAG = 1
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+
+
+	<select id="selectCount" resultType="java.util.Map">
+		select B.month,B.count
+		from
+		(select DATE_FORMAT(EXAMINE_OK_TIME,'%m') as month,count(*) as count  
+		from sz_merchant   
+		where DATE_FORMAT(EXAMINE_OK_TIME,'%Y')= year(now())
+		group by DATE_FORMAT(EXAMINE_OK_TIME,'%m') 
+		UNION
+		SELECT '01' as month,0 as count
+		union  
+		SELECT '02' as month,0 as count
+		union  
+		SELECT '03' as month,0 as count
+		  union  
+		SELECT '04' as month,0 as count
+		  union  
+		SELECT '05' as month,0 as count 
+		union  
+		SELECT '06' as month,0 as count
+		  union  
+		SELECT '07' as month,0 as count
+		union  
+		SELECT '08' as month,0 as count
+		  union  
+		SELECT '09' as month,0 as count
+		  union  
+		SELECT '10' as month,0 as count
+		  union  
+		SELECT '11' as month,0 as count
+		   union  
+		SELECT '12' as month,0 as count) B
+		group by  B.month
+		order by B.month		
+	</select>
+
+</mapper>

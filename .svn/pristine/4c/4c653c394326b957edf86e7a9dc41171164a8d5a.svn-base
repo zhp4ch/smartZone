@@ -1,0 +1,700 @@
+package com.mass.biz.smart.camera.controller;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+import javax.swing.JOptionPane;
+
+import org.activiti.editor.language.json.converter.util.CollectionUtils;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import cn.jiguang.common.resp.APIConnectionException;
+import cn.jiguang.common.resp.APIRequestException;
+import cn.jpush.api.JPushClient;
+import cn.jpush.api.push.PushResult;
+import cn.jpush.api.push.model.PushPayload;
+
+import com.alibaba.fastjson.JSONObject;
+import com.mass.biz.smart.camera.controller.HCNetSDK.FMSGCallBack;
+import com.mass.biz.smart.camera.model.CameraModel;
+import com.mass.biz.smart.camera.service.CameraService;
+import com.mass.biz.smart.sign.model.SignRule;
+import com.mass.biz.smart.sign.model.SignUpModel;
+import com.mass.biz.smart.sign.service.SignRuleService;
+import com.mass.biz.smart.sign.service.SignUpService;
+import com.mass.biz.smart.user.model.SzUser;
+import com.mass.biz.smart.user.service.SzUserService;
+import com.mass.core.framework.aop.LogAop;
+import com.mass.core.utils.AjaxResponse;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.IntByReference;
+
+/**
+ * 人脸识别Controller
+ * 
+ * @author vm3
+ * 
+ */
+@RestController
+@RequestMapping(value = "/camera")
+public class CameraController {
+
+	@Autowired
+	private CameraService cameraService;
+	@Autowired
+	private SignUpService signUpService;
+	@Autowired
+	private SignRuleService signRuleService;
+	@Autowired
+	private SzUserService szUserService;
+
+	private static HCNetSDK hCNetSDK = HCNetSDK.INSTANCE;
+	private HCNetSDK.NET_DVR_DEVICEINFO_V30 m_strDeviceInfo;// 设备信息
+	private String m_sDeviceIP;// 已登录设备的IP地址
+
+	public static NativeLong lUserID = new NativeLong(-1);// 用户句柄
+	private NativeLong lAlarmHandle = new NativeLong(-1);// 报警布防句柄
+	// private NativeLong lListenHandle = new NativeLong(-1);// 报警监听句柄
+
+	FMSGCallBack fMSFCallBack = null;// 报警回调函数实现
+	FMSGCallBack_V31 fMSFCallBack_V31 = null;// 报警回调函数实现
+
+	// 设备IP
+	@Value("${cameraPram.deviceIp}")
+	private String deviceIp;
+	// 设备端口
+	@Value("${cameraPram.devicePort}")
+	private String devicePort;
+	// 设备登录名
+	@Value("${cameraPram.loginName}")
+	private String loginName;
+	// 设备密码
+	@Value("${cameraPram.loginPwd}")
+	private String loginPwd;
+
+	@PostConstruct
+	@RequestMapping(value = "/jButtonLoginActionPerformed")
+	public AjaxResponse jButtonLoginActionPerformed() {
+
+		// 设备初始化
+		boolean initSuc = hCNetSDK.NET_DVR_Init();
+		if (initSuc != true) {
+			return AjaxResponse.error("初始化失败");
+		} else {
+			// 注册之前先注销已注册的用户,预览情况下不可注销
+			if (lUserID.longValue() > -1) {
+				// 先注销
+				hCNetSDK.NET_DVR_Logout(lUserID);
+				lUserID = new NativeLong(-1);
+			}
+			// 注册
+			m_sDeviceIP = deviceIp;// 设备ip地址
+			// m_sDeviceIP = jTextFieldIPAddress.getText();// 设备ip地址
+			m_strDeviceInfo = new HCNetSDK.NET_DVR_DEVICEINFO_V30();
+			int iPort = Integer.parseInt(devicePort);
+			// int iPort = Integer.parseInt(jTextFieldPortNumber.getText());
+			lUserID = hCNetSDK.NET_DVR_Login_V30(m_sDeviceIP, (short) iPort,
+					loginName, loginPwd, m_strDeviceInfo);
+			/*
+			 * lUserID = hCNetSDK.NET_DVR_Login_V30(m_sDeviceIP, (short) iPort,
+			 * jTextFieldUserName.getText(), new
+			 * String(jPasswordFieldPassword.getPassword()), m_strDeviceInfo);
+			 */
+			long userID = lUserID.longValue();
+			if (userID == -1) {
+				return AjaxResponse.error("注册失败");
+			} else {
+				// 布防
+				if (lAlarmHandle.intValue() < 0) {
+					// 尚未布防,需要布防
+					if (fMSFCallBack_V31 == null) {
+						fMSFCallBack_V31 = new FMSGCallBack_V31();
+						Pointer pUser = null;
+						if (!hCNetSDK.NET_DVR_SetDVRMessageCallBack_V31(
+								fMSFCallBack_V31, pUser)) {
+							System.out.println("设置回调函数失败!");
+						}
+					}
+					HCNetSDK.NET_DVR_SETUPALARM_PARAM m_strAlarmInfo = new HCNetSDK.NET_DVR_SETUPALARM_PARAM();
+					m_strAlarmInfo.dwSize = m_strAlarmInfo.size();
+					m_strAlarmInfo.byLevel = 1;
+					m_strAlarmInfo.byAlarmInfoType = 1;
+					m_strAlarmInfo.write();
+					lAlarmHandle = hCNetSDK.NET_DVR_SetupAlarmChan_V41(lUserID,
+							m_strAlarmInfo);
+					if (lAlarmHandle.intValue() == -1) {
+						System.out
+								.println("!!!!!!!!!!!!!布防失败!!!!!!!!!!!!!!!!!!");
+						return AjaxResponse.error("布防失败");
+					} else {
+						System.out.println("##########布防成功##########");
+						return AjaxResponse.success("布防成功");
+					}
+				} else {
+					System.out.println("!!!!!!!!!!!!!布防失败!!!!!!!!!!!!!!!!!!");
+					return AjaxResponse.error("布防失败");
+				}
+			}
+		}
+	}
+
+	public class FMSGCallBack_V31 implements HCNetSDK.FMSGCallBack_V31 {
+		// 报警信息回调函数
+		public boolean invoke(NativeLong lCommand,
+				HCNetSDK.NET_DVR_ALARMER pAlarmer, Pointer pAlarmInfo,
+				int dwBufLen, Pointer pUser) {
+			AlarmDataHandle(lCommand, pAlarmer, pAlarmInfo, dwBufLen, pUser);
+			return true;
+		}
+	}
+
+	public void AlarmDataHandle(NativeLong lCommand,
+			HCNetSDK.NET_DVR_ALARMER pAlarmer, Pointer pAlarmInfo,
+			int dwBufLen, Pointer pUser) {
+
+		String sAlarmType = new String();
+		String[] newRow = new String[3];
+		// 报警时间
+		Date today = new Date();
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String[] sIP = new String[2];
+		sAlarmType = new String("lCommand=") + lCommand.intValue();
+		// lCommand是传的报警类型
+		switch (lCommand.intValue()) {
+		case HCNetSDK.COMM_ALARM_V30:
+			HCNetSDK.NET_DVR_ALARMINFO_V30 strAlarmInfoV30 = new HCNetSDK.NET_DVR_ALARMINFO_V30();
+			strAlarmInfoV30.write();
+			Pointer pInfoV30 = strAlarmInfoV30.getPointer();
+			pInfoV30.write(0,
+					pAlarmInfo.getByteArray(0, strAlarmInfoV30.size()), 0,
+					strAlarmInfoV30.size());
+			strAlarmInfoV30.read();
+			switch (strAlarmInfoV30.dwAlarmType) {
+			case 0:
+				sAlarmType = sAlarmType + new String("：信号量报警") + "，" + "报警输入口："
+						+ (strAlarmInfoV30.dwAlarmInputNumber + 1);
+				break;
+			case 1:
+				sAlarmType = sAlarmType + new String("：硬盘满");
+				break;
+			case 2:
+				sAlarmType = sAlarmType + new String("：信号丢失");
+				break;
+			case 3:
+				sAlarmType = sAlarmType + new String("：移动侦测") + "，" + "报警通道：";
+				for (int i = 0; i < 64; i++) {
+					if (strAlarmInfoV30.byChannel[i] == 1) {
+						sAlarmType = sAlarmType + "ch" + (i + 1) + " ";
+					}
+				}
+				break;
+			case 4:
+				sAlarmType = sAlarmType + new String("：硬盘未格式化");
+				break;
+			case 5:
+				sAlarmType = sAlarmType + new String("：读写硬盘出错");
+				break;
+			case 6:
+				sAlarmType = sAlarmType + new String("：遮挡报警");
+				break;
+			case 7:
+				sAlarmType = sAlarmType + new String("：制式不匹配");
+				break;
+			case 8:
+				sAlarmType = sAlarmType + new String("：非法访问");
+				break;
+			}
+			newRow[0] = dateFormat.format(today);
+			// 报警类型
+			newRow[1] = sAlarmType;
+			// 报警设备IP地址
+			sIP = new String(pAlarmer.sDeviceIP).split("\0", 2);
+			newRow[2] = sIP[0];
+			break;
+		case HCNetSDK.COMM_SNAP_MATCH_ALARM: // 人脸黑名单比对报警
+			HCNetSDK.NET_VCA_FACESNAP_MATCH_ALARM strFaceSnapMatch = new HCNetSDK.NET_VCA_FACESNAP_MATCH_ALARM();
+			strFaceSnapMatch.write();
+			Pointer pFaceSnapMatch = strFaceSnapMatch.getPointer();
+			pFaceSnapMatch.write(0,
+					pAlarmInfo.getByteArray(0, strFaceSnapMatch.size()), 0,
+					strFaceSnapMatch.size());
+			strFaceSnapMatch.read();
+
+			JPushClient jpushClient = new JPushClient(
+					"8f042dadb97b1cef6502e02d", "26edec3a6ce3f5a3de5ede97");
+
+			CameraModel model = new CameraModel();
+			model.setCreate_time(dateFormat.format(today));
+			model.setId_code(new String(
+					strFaceSnapMatch.struBlackListInfo.struBlackListInfo.struAttribute.byCertificateNumber)
+					.trim());
+			model = cameraService.addEntiy(model);
+
+			SignUpModel signUpModel = signUpService.getSignByCode(
+					model.getId_code(), model.getCreate_time());
+			SignRule signRule = signRuleService.getIdCode(model.getId_code());
+			PushPayload pushPayload = buildPushObject_all_all_alert(signUpModel
+					.getName());
+			// 如果抓拍时间为上午且未打卡
+			if (Integer.parseInt(model.getCreate_time().substring(11, 13)) < 12
+					&& signUpModel.getOn_state() == 0) {
+				// 判断是否迟到
+				if (model.getCreate_time().substring(11, 16)
+						.compareTo(signRule.getOnTime()) < 0) {
+					// 正常
+					signUpModel.setOn_state(1);
+				} else {
+					// 迟到
+					signUpModel.setOn_state(2);
+				}
+				signUpModel.setOn_time(model.getCreate_time());
+				// 更新打卡状态
+				signUpService.updateEntiy(signUpModel);
+				System.out.println("上班打卡成功！！！");
+				// 向设备推送消息
+				try {
+					PushResult result = jpushClient.sendPush(pushPayload);
+				} catch (APIConnectionException | APIRequestException e) {
+					e.printStackTrace();
+				}
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				// 请求结束后，调用 NettyHttpClient 中的 close 方法，否则进程不会退出。
+				jpushClient.close();
+				System.out.println("上班通知！");
+			} else if (Integer.parseInt(model.getCreate_time()
+					.substring(11, 13)) >= 12) {
+				// 抓拍时间为下午
+				if (model.getCreate_time().substring(11, 16)
+						.compareTo(signRule.getOffTime()) > 0) {
+					// 正常
+					signUpModel.setOff_state(1);
+				} else {
+					// 早退
+					signUpModel.setOff_state(2);
+				}
+				signUpModel.setOff_time(model.getCreate_time());
+				// 更新打卡状态
+				signUpService.updateEntiy(signUpModel);
+				System.out.println("下班打卡成功！！！");
+				// 向设备推送消息
+				try {
+					PushResult result = jpushClient.sendPush(pushPayload);
+				} catch (APIConnectionException | APIRequestException e) {
+					e.printStackTrace();
+				}
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				// 请求结束后，调用 NettyHttpClient 中的 close 方法，否则进程不会退出。
+				jpushClient.close();
+				System.out.println("下班通知！");
+			}
+			break;
+		}
+	}
+
+	public static PushPayload buildPushObject_all_all_alert(String userName) {
+		return PushPayload.alertAll(userName);
+	}
+
+	/**
+	 * 设备常量
+	 */
+	public boolean m_isSupportFDLib; // 是否支持人脸功能
+	public List<HCNetSDK.NET_DVR_FDLIB_PARAM> m_FDLibList;
+	public NativeLong m_lUploadHandle;
+
+	public NativeLong m_UploadStatus;
+
+	@LogAop(menuName = "身份证照片", operationDesc = "批理插入", operationType = "1")
+	@RequestMapping(value = "/idcard/import", method = RequestMethod.GET)
+	@Transactional
+	public AjaxResponse idCardImport(@RequestParam("jsonStr") String jsonStr) {
+		List<SzUser> list = JSONObject.parseArray(jsonStr, SzUser.class);
+		if (CollectionUtils.isNotEmpty(list)) {
+			szUserService.updateBatch(list);
+		}
+		m_FDLibList = new ArrayList<HCNetSDK.NET_DVR_FDLIB_PARAM>();
+		m_lUploadHandle = new NativeLong(-1);
+		m_UploadStatus = new NativeLong(-1);
+		try {
+			// 查询是否支持人脸库
+			if (GetFaceCapabilities()) {
+				m_isSupportFDLib = true;
+				if (SearchFDLib()) {
+					UploadFaceLinData(list);
+				}
+			} else {
+				m_isSupportFDLib = false;
+			}
+		} catch (DocumentException ex) {
+			ex.printStackTrace();
+		}
+		return AjaxResponse.success("import success");
+	}
+
+	// 人脸能力集获取
+	public boolean GetFaceCapabilities() throws DocumentException {
+		HCNetSDK.NET_DVR_XML_CONFIG_INPUT inBuf = new HCNetSDK.NET_DVR_XML_CONFIG_INPUT();
+		inBuf.dwSize = inBuf.size();
+		String url = "GET /ISAPI/Intelligent/FDLib/capabilities\r\n";
+
+		HCNetSDK.BYTE_ARRAY ptrUrl = new HCNetSDK.BYTE_ARRAY(url.length());
+		System.arraycopy(url.getBytes(), 0, ptrUrl.byValue, 0, url.length());
+		ptrUrl.write();
+		inBuf.lpRequestUrl = ptrUrl.getPointer();
+		inBuf.dwRequestUrlLen = url.length();
+
+		HCNetSDK.NET_DVR_XML_CONFIG_OUTPUT outBuf = new HCNetSDK.NET_DVR_XML_CONFIG_OUTPUT();
+		outBuf.dwSize = outBuf.size();
+		HCNetSDK.BYTE_ARRAY ptrOutByte = new HCNetSDK.BYTE_ARRAY(
+				HCNetSDK.ISAPI_DATA_LEN);
+		outBuf.lpOutBuffer = ptrOutByte.getPointer();
+		outBuf.dwOutBufferSize = HCNetSDK.ISAPI_DATA_LEN;
+		outBuf.write();
+
+		if (hCNetSDK.NET_DVR_STDXMLConfig(CameraController.lUserID, inBuf,
+				outBuf)) {
+			return true;
+		} else {
+			int code = hCNetSDK.NET_DVR_GetLastError();
+			JOptionPane.showMessageDialog(null, "获取人脸能力集失败: " + code);
+			return false;
+		}
+	}
+
+	// 查询人脸库
+	public boolean SearchFDLib() {
+		try {
+			if (m_isSupportFDLib) {
+				// 返回true，说明支持人脸
+				HCNetSDK.NET_DVR_XML_CONFIG_INPUT struInput = new HCNetSDK.NET_DVR_XML_CONFIG_INPUT();
+				struInput.dwSize = struInput.size();
+
+				String str = "GET /ISAPI/Intelligent/FDLib\r\n";
+				HCNetSDK.BYTE_ARRAY ptrUrl = new HCNetSDK.BYTE_ARRAY(
+						HCNetSDK.BYTE_ARRAY_LEN);
+				System.arraycopy(str.getBytes(), 0, ptrUrl.byValue, 0,
+						str.length());
+				ptrUrl.write();
+				struInput.lpRequestUrl = ptrUrl.getPointer();
+				struInput.dwRequestUrlLen = str.length();
+
+				HCNetSDK.NET_DVR_XML_CONFIG_OUTPUT struOutput = new HCNetSDK.NET_DVR_XML_CONFIG_OUTPUT();
+				struOutput.dwSize = struOutput.size();
+
+				HCNetSDK.BYTE_ARRAY ptrOutByte = new HCNetSDK.BYTE_ARRAY(
+						HCNetSDK.ISAPI_DATA_LEN);
+				struOutput.lpOutBuffer = ptrOutByte.getPointer();
+				struOutput.dwOutBufferSize = HCNetSDK.ISAPI_DATA_LEN;
+
+				HCNetSDK.BYTE_ARRAY ptrStatusByte = new HCNetSDK.BYTE_ARRAY(
+						HCNetSDK.ISAPI_STATUS_LEN);
+				struOutput.lpStatusBuffer = ptrStatusByte.getPointer();
+				struOutput.dwStatusSize = HCNetSDK.ISAPI_STATUS_LEN;
+				struOutput.write();
+
+				if (hCNetSDK.NET_DVR_STDXMLConfig(CameraController.lUserID,
+						struInput, struOutput)) {
+					String xmlStr = struOutput.lpOutBuffer.getString(0);
+
+					// dom4j解析xml
+					Document document = DocumentHelper.parseText(xmlStr);
+					// 获取根节点元素对象
+					Element FDLibBaseCfgList = document.getRootElement();
+
+					// 同时迭代当前节点下面的所有子节点
+					Iterator<Element> iterator = FDLibBaseCfgList
+							.elementIterator();
+					while (iterator.hasNext()) {
+						HCNetSDK.NET_DVR_FDLIB_PARAM tmp = new HCNetSDK.NET_DVR_FDLIB_PARAM();
+						Element e = iterator.next();
+						Iterator<Element> iterator2 = e.elementIterator();
+						while (iterator2.hasNext()) {
+							Element e2 = iterator2.next();
+							if (e2.getName().equals("id")) {
+								String id = e2.getText();
+								tmp.dwID = Integer.parseInt(id);
+							}
+							if (e2.getName().equals("name")) {
+								tmp.szFDName = e2.getText();
+							}
+							if (e2.getName().equals("FDID")) {
+								tmp.szFDID = e2.getText();
+							}
+						}
+						m_FDLibList.add(tmp);
+					}
+
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		} catch (DocumentException ex) {
+			ex.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	// 图片上传到设备方法
+	public void UploadFaceLinData(final List<SzUser> list) {
+		if (m_lUploadHandle.longValue() != -1) {
+			if (hCNetSDK.NET_DVR_UploadClose(m_lUploadHandle)) {
+				System.out.println("NET_DVR_UploadClose success");
+			} else {
+				System.out.println("NET_DVR_UploadClose fail,error="
+						+ hCNetSDK.NET_DVR_GetLastError());
+			}
+		}
+		UploadFile(0);
+		if (m_lUploadHandle.longValue() < 0) {
+			System.out.println("NET_DVR_UploadFile_V40 fail,error="
+					+ hCNetSDK.NET_DVR_GetLastError());
+		} else {
+			System.out.println("NET_DVR_UploadFile_V40 success");
+			for (SzUser szUser : list) {
+				UploadSend(szUser);
+				while (true) {
+					if (-1 == m_lUploadHandle.longValue()) {
+						return;
+					}
+					m_UploadStatus = getUploadState();
+					if (m_UploadStatus.longValue() == 1) {
+						HCNetSDK.NET_DVR_UPLOAD_FILE_RET struPicRet = new HCNetSDK.NET_DVR_UPLOAD_FILE_RET();
+						struPicRet.write();
+						Pointer lpPic = struPicRet.getPointer();
+
+						boolean bRet = hCNetSDK.NET_DVR_GetUploadResult(
+								m_lUploadHandle, lpPic, struPicRet.size());
+						if (!bRet) {
+							System.out
+									.println("NET_DVR_GetUploadResult failed with:"
+											+ hCNetSDK.NET_DVR_GetLastError());
+						} else {
+							System.out.println("NET_DVR_GetUploadResult succ");
+							struPicRet.read();
+						}
+						/*
+						 * if (hCNetSDK.NET_DVR_UploadClose(m_lUploadHandle)) {
+						 * m_lUploadHandle.setValue(-1); }
+						 */
+						break;
+					} else if (m_UploadStatus.longValue() >= 3
+							|| m_UploadStatus.longValue() == -1) {
+						System.out
+								.println("m_UploadStatus = " + m_UploadStatus);
+						// hCNetSDK.NET_DVR_UploadClose(m_lUploadHandle);
+						m_lUploadHandle.setValue(-1);
+						break;
+					}
+				}
+			}
+		}
+		/*
+		 * Thread thread = new Thread() { public void run() {
+		 * 
+		 * } }; thread.start();
+		 */
+	}
+
+	// 上传图片
+	public boolean UploadFile(int index) {
+		if (m_isSupportFDLib) {
+			// 返回true，说明支持人脸
+			HCNetSDK.NET_DVR_FACELIB_COND struInput = new HCNetSDK.NET_DVR_FACELIB_COND();
+			struInput.dwSize = struInput.size();
+			struInput.szFDID = m_FDLibList.get(index).szFDID.getBytes();
+			struInput.byConcurrent = 0;
+			struInput.byCover = 1;
+			struInput.byCustomFaceLibID = 0;
+			struInput.write();
+			Pointer lpInput = struInput.getPointer();
+			NativeLong ret = hCNetSDK.NET_DVR_UploadFile_V40(
+					CameraController.lUserID, HCNetSDK.IMPORT_DATA_TO_FACELIB,
+					lpInput, struInput.size(), null, null, 0);
+			if (ret.longValue() == -1) {
+				int code = hCNetSDK.NET_DVR_GetLastError();
+				System.out.println("文件上传错误代码：" + code);
+				return false;
+			} else {
+				m_lUploadHandle = ret;
+				return true;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	// 发送文件方法
+	public void UploadSend(SzUser szUser) {
+		FileInputStream picfile = null;
+		FileInputStream xmlfile = null;
+		int picdataLength = 0;
+		int xmldataLength = 0;
+		SAXReader sr = new SAXReader(); // 需要导入jar包:dom4j
+		// 关联xml
+		Document document = null;
+		try {
+			document = sr.read("D:\\lib\\data.xml");
+		} catch (DocumentException e3) {
+			e3.printStackTrace();
+		}
+		// 重写xml
+		// 修改名字（身份证号代替）
+		Element name = document.getRootElement().element("name");
+		name.setText(szUser.getId_code());
+		// 修改证件号
+		Element id_code = document.getRootElement()
+				.element("certificateNumber");
+		id_code.setText(szUser.getId_code());
+		// 调用下面的静态方法完成xml的写出
+		try {
+			saveDocument(
+					document,
+					new File("D:\\lib\\"
+							+ szUser.getId_code() + ".xml"));
+		} catch (IOException e3) {
+			e3.printStackTrace();
+		}
+		try {
+			picfile = new FileInputStream(new File(szUser.getImg_path()));
+			xmlfile = new FileInputStream(new File(
+					"D:\\lib\\"
+							+ szUser.getId_code() + ".xml"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		try {
+			picdataLength = picfile.available();
+			xmldataLength = xmlfile.available();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+
+		if (picdataLength < 0 || xmldataLength < 0) {
+			System.out.println("文件大小错误<0");
+			return;
+		}
+
+		HCNetSDK.BYTE_ARRAY ptrpicByte = new HCNetSDK.BYTE_ARRAY(picdataLength);
+		HCNetSDK.BYTE_ARRAY ptrxmlByte = new HCNetSDK.BYTE_ARRAY(xmldataLength);
+
+		try {
+			picfile.read(ptrpicByte.byValue);
+			xmlfile.read(ptrxmlByte.byValue);
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
+
+		ptrpicByte.write();
+		ptrxmlByte.write();
+
+		HCNetSDK.NET_DVR_SEND_PARAM_IN struSendParam = new HCNetSDK.NET_DVR_SEND_PARAM_IN();
+
+		struSendParam.pSendData = ptrpicByte.getPointer();
+		struSendParam.dwSendDataLen = picdataLength;
+		struSendParam.pSendAppendData = ptrxmlByte.getPointer();
+		struSendParam.dwSendAppendDataLen = xmldataLength;
+		if (struSendParam.pSendData == null
+				|| struSendParam.pSendAppendData == null
+				|| struSendParam.dwSendDataLen == 0
+				|| struSendParam.dwSendAppendDataLen == 0) {
+			System.out.println("上传xml报错");
+			return;
+		}
+
+		struSendParam.byPicType = 1;
+		struSendParam.dwPicMangeNo = 0;
+		struSendParam.write();
+
+		NativeLong iRet = hCNetSDK.NET_DVR_UploadSend(m_lUploadHandle,
+				struSendParam.getPointer(), null);
+
+		System.out.println("iRet=" + iRet);
+		if (iRet.longValue() < 0) {
+			System.out.println("NET_DVR_UploadSend fail,error="
+					+ hCNetSDK.NET_DVR_GetLastError());
+		} else {
+			System.out.println("NET_DVR_UploadSend success");
+			System.out.println("dwSendDataLen =" + struSendParam.dwSendDataLen);
+			System.out.println("dwSendAppendDataLen ="
+					+ struSendParam.dwSendAppendDataLen);
+		}
+		try {
+			picfile.close();
+			xmlfile.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// 下面的为固定代码---------可以完成java对XML的写,改等操作
+	public static void saveDocument(Document document, File xmlFile)
+			throws IOException {
+		Writer osWrite = new OutputStreamWriter(new FileOutputStream(xmlFile));// 创建输出流
+		OutputFormat format = OutputFormat.createPrettyPrint(); // 获取输出的指定格式
+		format.setEncoding("UTF-8");// 设置编码 ，确保解析的xml为UTF-8格式
+		XMLWriter writer = new XMLWriter(osWrite, format);// XMLWriter
+															// 指定输出文件以及格式
+		writer.write(document);// 把document写入xmlFile指定的文件(可以为被解析的文件或者新创建的文件)
+		writer.flush();
+		writer.close();
+	}
+
+	public NativeLong getUploadState() {
+		IntByReference pInt = new IntByReference(0);
+		m_UploadStatus = hCNetSDK.NET_DVR_GetUploadState(m_lUploadHandle, pInt);
+		if (m_UploadStatus.longValue() == -1) {
+			System.out.println("NET_DVR_GetUploadState fail,error="
+					+ hCNetSDK.NET_DVR_GetLastError());
+		} else if (m_UploadStatus.longValue() == 2) {
+			System.out.println("is uploading!!!!  progress = "
+					+ pInt.getValue());
+		} else if (m_UploadStatus.longValue() == 1) {
+			System.out.println("progress = " + pInt.getValue());
+			System.out.println("Uploading Succ!!!!!");
+		} else {
+			System.out.println("NET_DVR_GetUploadState fail  m_UploadStatus="
+					+ m_UploadStatus);
+			System.out.println("NET_DVR_GetUploadState fail,error="
+					+ hCNetSDK.NET_DVR_GetLastError());
+		}
+		return m_UploadStatus;
+	}
+
+}

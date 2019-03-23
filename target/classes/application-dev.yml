@@ -1,0 +1,8 @@
+"spring":
+  "datasource":
+    "url": "jdbc:mysql://caiyuankeji.vicp.io:3306/smartzone?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true"
+    "username": "root"
+    "password": "caiyuan!@#"
+ #区域码   
+regionConst:
+     provice: 231000

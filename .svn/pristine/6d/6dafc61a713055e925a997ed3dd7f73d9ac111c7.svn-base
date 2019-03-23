@@ -1,0 +1,19 @@
+package com.mass.biz.smart.joinMerchant.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import com.mass.biz.smart.joinMerchant.model.SzJoinMerchant;
+
+@Mapper
+public interface SzJoinMerchantMapper {
+
+	int insert(SzJoinMerchant szJoinMerchant);
+	
+	int update(SzJoinMerchant szJoinMerchant);
+	
+    List<SzJoinMerchant> selectList(SzJoinMerchant szJoinMerchant);
+
+}

@@ -1,0 +1,98 @@
+package com.mass.biz.smart.user.controller;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+
+import com.mass.biz.smart.user.model.SzUser;
+import com.mass.biz.smart.user.service.SzUserService;
+import com.mass.core.sys.file.model.FileInfoTemp;
+import com.mass.core.sys.file.service.FileUploadService;
+import com.mass.core.utils.AjaxResponse;
+
+/**
+ * 用户信息Controller
+ * @author jiangd
+ */
+@RestController
+@RequestMapping(value = "/wx/szUser")
+public class SzUserWXController {
+
+	@Autowired
+	private SzUserService szUserService;
+	@Autowired
+	private FileUploadService fileUploadService;
+	private final static Logger LOGGER = LoggerFactory.getLogger(SzUserWXController.class);
+    @SuppressWarnings("unused")
+	@RequestMapping(value="/insert", method = RequestMethod.POST)
+    public AjaxResponse insertEntity(SzUser szUser, HttpSession session){
+    		long count =  this.szUserService.countByIdCode(szUser);
+    		if(count>0) {
+    			   return this.szUserService.update(szUser) ? AjaxResponse.success("update ok")
+   	            		: AjaxResponse.error("update error");
+    			
+    		}else {
+    			return this.szUserService.insert(szUser) ? AjaxResponse.success("add ok")
+    	    			: AjaxResponse.error("add error");
+    		}
+    }
+    
+    @RequestMapping(value = "/getEntityByIdCard", method = RequestMethod.GET)
+	public AjaxResponse getEntityByIdCard( @RequestParam(value = "id_code") String id_code) {
+		  try {
+			   //SzUser szUser = this.szUserService.getEntityByIdCard(id_code);
+	           //return AjaxResponse.success("ok", szUser);
+			  return null;
+	        }catch (Exception e){
+	        	e.printStackTrace();
+	            LOGGER.error("select SzUser error!", e);
+	            return AjaxResponse.error("error");
+	        }
+	}
+    @RequestMapping(value = "/getEntityById", method = RequestMethod.POST)
+    public AjaxResponse getEntityById( @RequestParam(value = "rid") int rid) {
+    	try {
+    		SzUser szUser = this.szUserService.getEntityById(rid);
+    		return AjaxResponse.success("ok", szUser);
+    	}catch (Exception e){
+    		e.printStackTrace();
+    		LOGGER.error("select SzUser error!", e);
+    		return AjaxResponse.error("error");
+    	}
+    }
+    
+    @RequestMapping(value = "/fileUpload", method = RequestMethod.POST)
+    public AjaxResponse FileUpload( MultipartHttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam("isShrink") boolean isShrink,
+            @RequestParam("type") String type,
+            @RequestParam(value = "code", required = false) String code) {
+   	 List<FileInfoTemp> list = this.fileUploadService.uploadFile(request, type, isShrink);
+         return list == null ? AjaxResponse.error("上传失败",list) : AjaxResponse.success("上传成功",list);
+    }
+    
+	@RequestMapping(value = "/getEntityByOpenId", method = RequestMethod.GET)
+	public AjaxResponse getEntityByOpenId( @RequestParam(value = "openId") String openId) {
+		try {
+			SzUser szUser = this.szUserService.getEntityByOpendId(openId);
+			return AjaxResponse.success("ok", szUser);
+		}catch (Exception e){
+			e.printStackTrace();
+			LOGGER.error("select SzUser error!", e);
+			return AjaxResponse.error("error");
+		}
+	}
+
+}

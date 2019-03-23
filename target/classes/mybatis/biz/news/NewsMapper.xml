@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.news.dao.NewsMapper">
+    <resultMap id="newsInfo" type="com.mass.biz.news.model.NewInfo">
+        <result property="id" column="ID" jdbcType="BIGINT"/>
+        <result property="newsTitle" column="NEWS_TITLE" jdbcType="VARCHAR"/>
+        <result property="newsPicture" column="NEWS_PICTURE" jdbcType="VARCHAR"/>
+        <result property="newsLink" column="NEWS_LINK" jdbcType="VARCHAR"/>
+        <result property="markType" column="MARK_TYPE" jdbcType="TINYINT"/>
+        <result property="newsContent" column="NEWS_CONTENT" jdbcType="LONGVARCHAR"/>
+        <result property="newsTypeName" column="NEWS_TYPE_NAME" jdbcType="VARCHAR"/>
+        <result property="newsTypeCode" column="NEWS_TYPE_CODE" jdbcType="VARCHAR"/>
+        <result property="author" column="AUTHOR" jdbcType="VARCHAR"/>
+        <result property="newSource" column="NEW_SOURCE" jdbcType="VARCHAR"/>
+        <result property="sourceName" column="SOURCE_NAME" jdbcType="VARCHAR"/>
+        <result property="sourceCode" column="SOURCE_CODE" jdbcType="VARCHAR"/>
+        <result property="isPublish" column="IS_PUBLISH" jdbcType="TINYINT"/>
+        <result property="publishTime" column="PUBLISH_TIME" jdbcType="TIMESTAMP"/>
+        <result property="topStatus" column="TOP_STATUS" jdbcType="TINYINT"/>
+        <result property="isOriginal" column="IS_ORIGINAL" jdbcType="TINYINT"/>
+        <result property="clickRate" column="CLICK_RATE" jdbcType="INTEGER"/>
+        <result property="createTime" column="CREATE_TIME" jdbcType="TIMESTAMP"/>
+        <result property="lastUpdateTime" column="LAST_UPDATE_TIME" jdbcType="TIMESTAMP"/>
+        <result property="delFlag" column="DEL_FLAG" jdbcType="TINYINT"/>
+        <result property="publishId" column="PUBLISH_ID" jdbcType="BIGINT"/>
+        <result property="publisher" column="PUBLISHER" jdbcType="VARCHAR"/>
+        <result property="createId" column="CREATE_ID" jdbcType="BIGINT"/>
+        <result property="creater" column="CREATER" jdbcType="VARCHAR"/>
+        <result property="updateId" column="UPDATE_ID" jdbcType="BIGINT"/>
+        <result property="updater" column="UPDATER" jdbcType="VARCHAR"/>
+
+    </resultMap>
+
+    <sql id="baseSql">
+        T1.ID, T1.NEWS_TITLE,T1.NEWS_CONTENT, T1.NEWS_PICTURE, T1.NEWS_LINK, T1.MARK_TYPE, T1.NEWS_TYPE_CODE, T1.SOURCE_CODE, 
+        T1.AUTHOR, T1.NEW_SOURCE, T1.IS_PUBLISH, T1.PUBLISH_TIME, T1.TOP_STATUS, T1.IS_ORIGINAL, T1.CLICK_RATE, T1.CREATE_TIME, 
+        T1.LAST_UPDATE_TIME,T1.PUBLISH_ID, T1.PUBLISHER, T1.CREATE_ID, T1.CREATER, T1.UPDATE_ID, T1.UPDATER
+    </sql>
+
+    <!-- 标题 关键字 发布时间范围查询-->
+    <select id="selectPageList" resultMap="newsInfo">
+        SELECT
+          <include refid="baseSql"/>
+          FROM T_NEWS_INFO T1
+        WHERE T1.DEL_FLAG=0 
+        <if test="searchParams !=null ">
+       		<if test="searchParams.newsTypeCode !=null and searchParams.newsTypeCode !=''">
+               AND T1.NEWS_TYPE_CODE = #{searchParams.newsTypeCode, jdbcType=VARCHAR}
+            </if>
+            <if test="searchParams.markType !=null ">
+                AND T1.MARK_TYPE = #{searchParams.markType, jdbcType=INTEGER}
+            </if>
+            <if test="searchParams.sourceCode !=null and searchParams.sourceCode !=''">
+                AND T1.SOURCE_CODE = #{searchParams.sourceCode, jdbcType=INTEGER}
+            </if>
+            <if test="searchParams.isOriginal !=null">
+           		AND T1.IS_ORIGINAL = #{searchParams.isOriginal, jdbcType=INTEGER}
+            </if>
+            <if test="searchParams.author !=null and searchParams.author !=''">
+                AND T1.AUTHOR LIKE CONCAT("%", #{searchParams.author, jdbcType=VARCHAR}, "%")
+            </if>
+            <if test="searchParams.newsTitle !=null and searchParams.newsTitle !=''">
+                AND T1.NEWS_TITLE LIKE CONCAT("%", #{searchParams.newsTitle, jdbcType=VARCHAR}, "%")
+            </if>
+            <if test="searchParams.publishTimeBefore != null">
+                AND <![CDATA[DATE_FORMAT(T1.PUBLISH_TIME,'%Y-%m-%d') >=  DATE_FORMAT(#{searchParams.publishTimeBefore},'%Y-%m-%d')]]>
+            </if>
+            <if test="searchParams.publishTimeAfter != null">
+                AND  <![CDATA[DATE_FORMAT(T1.PUBLISH_TIME,'%Y-%m-%d') <=  DATE_FORMAT(#{searchParams.publishTimeAfter},'%Y-%m-%d')]]>
+            </if>
+        </if>
+        ORDER BY T1.TOP_STATUS, T1.PUBLISH_TIME DESC
+        LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+    </select>
+    
+    <select id="count" resultType="java.lang.Long" parameterType="com.mass.biz.news.model.NewInfo">
+        SELECT COUNT(0)
+        FROM T_NEWS_INFO
+        WHERE DEL_FLAG = 0
+        <if test="newsTypeCode !=null and newsTypeCode !=''">
+            AND NEWS_TYPE_CODE = #{newsTypeCode, jdbcType=VARCHAR}
+        </if>
+        <if test="markType !=null ">
+            AND MARK_TYPE = #{markType, jdbcType=INTEGER}
+        </if>
+        <if test="sourceCode !=null and sourceCode !=''">
+            AND SOURCE_CODE = #{sourceCode, jdbcType=INTEGER}
+        </if>
+        <if test="isOriginal !=null">
+            AND IS_ORIGINAL = #{isOriginal, jdbcType=INTEGER}
+        </if>
+        <if test="author !=null and author !=''">
+            AND AUTHOR LIKE CONCAT("%", #{author, jdbcType=VARCHAR}, "%")
+        </if>
+        <if test="newsTitle !=null and newsTitle !=''">
+            AND NEWS_TITLE LIKE CONCAT("%", #{newsTitle, jdbcType=VARCHAR}, "%")
+        </if>
+        <if test="publishTimeBefore != null">
+            AND PUBLISH_TIME >= #{publishTimeBefore}
+        </if>
+        <if test="publishTimeAfter != null">
+            AND <![CDATA[PUBLISH_TIME <= #{publishTimeAfter}]]>
+        </if>
+    </select>
+ 
+    <select id="getEntityById" resultMap="newsInfo">
+        SELECT
+        	<include refid="baseSql"/><!-- , T1.NEWS_CONTENT, T2.VAL_NAME AS SOURCE_NAME, T3.VAL_NAME AS NEWS_TYPE_NAME -->
+        FROM T_NEWS_INFO T1
+        <!-- LEFT JOIN T_SYS_DICT_VAL T2 ON T1.SOURCE_CODE = T2.VAL_CODE
+        LEFT JOIN T_SYS_DICT_VAL T3 ON T1.NEWS_TYPE_CODE = T3.VAL_CODE -->
+        WHERE T1.DEL_FLAG = 0 AND T1.ID = #{id,jdbcType=BIGINT}
+    </select>
+
+    <insert  id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.mass.biz.news.model.NewInfo">
+        INSERT INTO T_NEWS_INFO(
+	        NEWS_TITLE, NEWS_PICTURE, NEWS_LINK, MARK_TYPE, SOURCE_CODE, NEWS_CONTENT, NEWS_TYPE_CODE,
+	        AUTHOR, NEW_SOURCE, IS_PUBLISH, TOP_STATUS, IS_ORIGINAL, PUBLISH_ID, PUBLISHER, CREATE_ID, CREATER, 
+	        UPDATE_ID, UPDATER, PUBLISH_TIME, CLICK_RATE, CREATE_TIME, LAST_UPDATE_TIME, DEL_FLAG)
+     	VALUES (
+	        #{newsTitle,jdbcType=VARCHAR},
+	        #{newsPicture,jdbcType=VARCHAR},
+	        #{newsLink,jdbcType=VARCHAR},
+	        #{markType,jdbcType=TINYINT},
+	        #{sourceCode,jdbcType=VARCHAR},
+	        #{newsContent,jdbcType=LONGVARCHAR},
+	        #{newsTypeCode,jdbcType=INTEGER},
+	        #{author,jdbcType=VARCHAR},
+	        #{newSource,jdbcType=VARCHAR},
+	        #{isPublish,jdbcType=TINYINT},
+	        #{topStatus,jdbcType=TINYINT},
+	        #{isOriginal,jdbcType=TINYINT},
+	        #{publishId,jdbcType=BIGINT},
+	        #{publisher,jdbcType=VARCHAR},
+	        #{createId,jdbcType=BIGINT},
+	        #{creater,jdbcType=VARCHAR},
+	        #{updateId,jdbcType=BIGINT},
+	        #{updater,jdbcType=VARCHAR},
+	        #{publishTime,jdbcType=TIMESTAMP},
+	        0, NOW(), NOW(), 0)
+    </insert>
+
+    <update id="update" parameterType="com.mass.biz.news.model.NewInfo">
+        UPDATE T_NEWS_INFO    
+        <set>
+        	<if test="newsTypeCode !=null and newsTypeCode !=''">NEWS_TYPE_CODE=#{newsTypeCode,jdbcType=VARCHAR},</if>
+            <if test="markType !=null">MARK_TYPE=#{markType,jdbcType=INTEGER},</if>
+            <if test="newsTitle !=null and newsTitle !=''">NEWS_TITLE=#{newsTitle,jdbcType=VARCHAR},</if>
+            <if test="newsPicture !=null and newsPicture !=''">NEWS_PICTURE=#{newsPicture,jdbcType=VARCHAR},</if>
+            <if test="newsLink !=null and newsLink !=''">NEWS_LINK=#{newsLink,jdbcType=VARCHAR},</if>
+            <if test="newsContent !=null and newsContent !=''">NEWS_CONTENT=#{newsContent,jdbcType=LONGVARCHAR},</if>
+            <if test="author !=null and author !=''">AUTHOR=#{author,jdbcType=VARCHAR},</if>
+            <if test="newSource !=null and newSource !=''">NEW_SOURCE=#{newSource,jdbcType=VARCHAR},</if>
+            <if test="isPublish !=null">IS_PUBLISH=#{isPublish,jdbcType=TINYINT},</if>
+            <if test="publisher !=null and publisher !=''">PUBLISHER=#{publisher,jdbcType=VARCHAR},</if>
+            <if test="publishId !=null">PUBLISH_ID=#{publishId,jdbcType=BIGINT},</if>
+            <if test="publishTime != null">PUBLISH_TIME=#{publishTime,jdbcType=TIMESTAMP},</if>
+            <if test="topStatus !=null">TOP_STATUS=#{topStatus,jdbcType=TINYINT},</if>
+            <if test="isOriginal !=null">IS_ORIGINAL=#{isOriginal,jdbcType=TINYINT},</if>
+            <if test="updateId !=null">UPDATE_ID=#{updateId,jdbcType=BIGINT},</if>
+            <if test="updater !=null and updater !=''">UPDATER=#{updater,jdbcType=VARCHAR},</if>
+            LAST_UPDATE_TIME=NOW()            
+        </set>
+        WHERE ID=#{id,jdbcType=BIGINT}
+    </update>
+    
+    <update id="delete" parameterType="java.lang.Long">
+        UPDATE T_NEWS_INFO
+        SET DEL_FLAG = 1
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="publish">
+        UPDATE T_NEWS_INFO
+        SET IS_PUBLISH = 1, 
+      		PUBLISH_ID=#{publishId,jdbcType=BIGINT},
+            PUBLISHER=#{publisher,jdbcType=VARCHAR},
+        	PUBLISH_TIME = NOW()
+        WHERE ID=#{id,jdbcType=BIGINT}
+    </update>
+
+	<select id="getIsPublishById" resultType="java.lang.Integer">
+        SELECT IS_PUBLISH
+        FROM T_NEWS_INFO
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </select>
+
+    <update id="recall">
+        UPDATE T_NEWS_INFO
+        SET IS_PUBLISH = 0
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+    
+     <!--浏览计数自增-->
+    <update id="updateClickRate">
+        UPDATE T_NEWS_INFO
+        SET CLICK_RATE = CLICK_RATE + 1
+        WHERE ID = #{id, jdbcType=BIGINT}
+    </update>
+</mapper>

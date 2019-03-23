@@ -1,0 +1,169 @@
+package com.mass.biz.smart.property.propertyPriceStatistics.model; 
+
+import java.util.Date;
+
+/**
+ *
+ * 项目名称：smartZone-ht
+ * 类名称：PropertyPrice
+ * 类描述：物业费实体
+ * 创建人：yihai Zhao
+ * 创建时间：2018年7月17日 下午3:09:10
+ * 修改人：yihai Zhao
+ * 修改时间：2018年7月17日 下午3:09:10
+ * 
+ * @version
+ *
+ */
+public class PropertyPrice {
+	
+	private Long id;					//主键
+	
+	private String name;				//缴费姓名
+	
+	private Date shouldPayDate;			//应缴时间
+	
+	private String building;			//楼号
+	
+	private String parkNumber;			//园区
+	
+	private String roomNumber;			//室号
+	
+	private Integer payManner;			//付款方式 1-线上  2-线下
+	
+	private String propertyCharge;		//物业费
+	
+	private String hydropowerCharge;	//水电费
+	
+	private String receiptNumber;		//收据编号
+		
+	private Integer payState;			//缴费状态  1-未交费 2-已缴费
+	
+	private String total;				//合计金额
+	
+	private Date payDate;				//实缴时间
+	
+	private Integer delFalg;			//删除标记
+	
+	private Long userId;				//用户id-关联外键
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Date getShouldPayDate() {
+		return shouldPayDate;
+	}
+
+	public void setShouldPayDate(Date shouldPayDate) {
+		this.shouldPayDate = shouldPayDate;
+	}
+
+	public String getBuilding() {
+		return building;
+	}
+
+	public void setBuilding(String building) {
+		this.building = building;
+	}
+
+	public String getParkNumber() {
+		return parkNumber;
+	}
+
+	public void setParkNumber(String parkNumber) {
+		this.parkNumber = parkNumber;
+	}
+
+	public String getRoomNumber() {
+		return roomNumber;
+	}
+
+	public void setRoomNumber(String roomNumber) {
+		this.roomNumber = roomNumber;
+	}
+
+	public Integer getPayManner() {
+		return payManner;
+	}
+
+	public void setPayManner(Integer payManner) {
+		this.payManner = payManner;
+	}
+
+	public String getPropertyCharge() {
+		return propertyCharge;
+	}
+
+	public void setPropertyCharge(String propertyCharge) {
+		this.propertyCharge = propertyCharge;
+	}
+
+	public String getHydropowerCharge() {
+		return hydropowerCharge;
+	}
+
+	public void setHydropowerCharge(String hydropowerCharge) {
+		this.hydropowerCharge = hydropowerCharge;
+	}
+
+	public String getReceiptNumber() {
+		return receiptNumber;
+	}
+
+	public void setReceiptNumber(String receiptNumber) {
+		this.receiptNumber = receiptNumber;
+	}
+
+	public Integer getPayState() {
+		return payState;
+	}
+
+	public void setPayState(Integer payState) {
+		this.payState = payState;
+	}
+
+	public String getTotal() {
+		return total;
+	}
+
+	public void setTotal(String total) {
+		this.total = total;
+	}
+
+	public Date getPayDate() {
+		return payDate;
+	}
+
+	public void setPayDate(Date payDate) {
+		this.payDate = payDate;
+	}
+
+	public Integer getDelFalg() {
+		return delFalg;
+	}
+
+	public void setDelFalg(Integer delFalg) {
+		this.delFalg = delFalg;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+}

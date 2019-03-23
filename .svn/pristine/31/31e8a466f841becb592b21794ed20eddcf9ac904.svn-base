@@ -1,0 +1,141 @@
+package com.mass.biz.smart.property.propertyPriceStatistics.controller; 
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.mass.biz.smart.merchantMgt.model.SzMerchantMgt;
+import com.mass.biz.smart.property.message.model.Message;
+import com.mass.biz.smart.property.message.service.MessageService;
+import com.mass.biz.smart.property.propertyPriceStatistics.model.PropertyPrice;
+import com.mass.biz.smart.property.propertyPriceStatistics.service.PropertyPriceService;
+import com.mass.biz.smart.property.suggestion.model.Suggest;
+import com.mass.biz.smart.user.model.SzUser;
+import com.mass.biz.utils.ExcelUtil;
+import com.mass.biz.utils.StringUtil;
+import com.mass.core.sys.file.service.FileUploadService;
+import com.mass.core.sys.user.model.SysUser;
+import com.mass.core.utils.AjaxResponse;
+import com.mass.core.utils.ExportExcelUtil;
+
+/**
+ *
+ * 项目名称：smartZone-ht
+ * 类名称：PropertyPriceController
+ * 类描述：物业统计控制层
+ * 创建人：zx
+ * 创建时间：2018‎年‎8‎月‎8‎日 10:14:05
+ * 
+ * @version
+ *
+ */
+@RestController
+@RequestMapping("/wx/propertyPrice")
+public class PropertyPriceWxController {
+
+	@Autowired
+	private PropertyPriceService propertyPriceService;
+	
+	@Autowired
+	private FileUploadService fileUploadService;
+	
+	@Autowired
+	private MessageService messageService;
+	
+	/**
+	* @Title: getPropertyPriceByUserId
+	* @Description: 用户物业费详情
+	* @param @param userId
+	* @return AjaxResponse    返回类型
+	* @author zx  
+	* @throws
+	* @date 2018‎年‎8‎月‎10日 10:29:41
+	 */
+	@RequestMapping("/getPropertyPriceByUserId")
+	public AjaxResponse getPropertyPriceByUserId(@RequestParam("userId")Long userId){
+		try {
+			List<PropertyPrice> pp = this.propertyPriceService.getPropertyPriceByUserId(userId);
+			return AjaxResponse.success("ok ", pp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return AjaxResponse.error("error");
+		}
+	}
+	
+	/**
+	* @Title: getMerchantByUserId
+	* @Description: 根据用户id查询公司信息
+	* @param @param userId
+	* @return AjaxResponse    返回类型
+	* @author zx  
+	* @throws
+	* @date 2018‎年‎8‎月‎13日 16:30:02
+	 */
+	@RequestMapping("/getMerchantByUserId")
+	public AjaxResponse getMerchantByUserId(@RequestParam("userId")Long userId){
+		try {
+			PropertyPrice pp = this.propertyPriceService.getMerchantByUserId(userId);
+			return AjaxResponse.success("ok ", pp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return AjaxResponse.error("error");
+		}
+	}
+	
+	/**
+	* @Title: queryPriceCountByuserId
+	* @Description: 根据用户id查询应缴费时间前三天的数据
+	* @param @param userId
+	* @return AjaxResponse    返回类型
+	* @author zx  
+	* @throws
+	* @date 2018‎年‎8‎月‎13日 16:30:02
+	 */
+	@RequestMapping("/queryPriceCountByuserId")
+	public AjaxResponse queryPriceCountByuserId(@RequestParam("userId")Long userId){
+		try {
+			List<PropertyPrice> pp = this.propertyPriceService.queryPriceCountByuserId(userId);
+			if(pp.size() > 0){
+				for(PropertyPrice pro : pp){
+					//新增消息推送
+					Message msg	   = new Message();
+					msg.setManyId(pro.getId()); 	//外键id
+					msg.setUserId(pro.getUserId()); //接收人id
+					msg.setSendId(Long.valueOf(1)); //发送人id
+					msg.setSendName("admin");		//发送人姓名
+					msg.setMsgState(4);				//消息类型 -->1-推送商户信息类  2-合同到期提醒 3-新闻推送 4-物业费催收 5- 管理员推送给监管人员
+					msg.setMsgContent("请尽快缴费");	//消息内容
+					msg.setStatus(3);				//用户身份识别  1-个人 2-商户 3-管理员
+					msg.setReadFlag(0);				//阅读标记 0-未读 1-已读
+					messageService.addMessage(msg);
+					//修改本条物业费的推送状态
+					pro.setIsCollection(1);
+					propertyPriceService.editPropertyPrice(pro);
+				}
+			}
+			return AjaxResponse.success("ok ", pp.size());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return AjaxResponse.error("error");
+		}
+	}
+}

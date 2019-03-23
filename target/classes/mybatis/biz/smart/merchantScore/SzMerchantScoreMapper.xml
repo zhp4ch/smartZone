@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.smart.merchantScore.dao.SzMerchantScoreMapper">
+	<resultMap id="szMerchantScore" type="com.mass.biz.smart.merchantScore.model.SzMerchantScore">
+		<result property="rid" column="rid" jdbcType="TINYINT" />
+		<result property="merchant_id" column="merchant_id" jdbcType="TINYINT"/>
+		<result property="del_flag" column="del_flag" jdbcType="TINYINT" />
+		<result property="score" column="score" jdbcType="TINYINT" />
+		<result property="changes" column="changes" jdbcType="TINYINT" />
+		<result property="description" column="description" jdbcType="VARCHAR"/>
+		<result property="create_time" column="create_time" jdbcType="VARCHAR"/>
+		<result property="user_id" column="user_id" jdbcType="TINYINT"/>
+	</resultMap>
+	
+	
+	
+	<!-- 商户最新积分列表 -->
+	<!-- <select id="selectIndexList" resultMap="szMerchantScore">
+		select
+			t2.score,t2.create_time,t2.merchant_id,t3.corporate_name
+		from
+			(
+				select
+					max(create_time) create_time,
+					merchant_id
+				from
+					sz_merchant_score where del_flag=0
+				group by
+					merchant_id
+		    LIMIT #{page,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+			) t1
+		left join sz_merchant_score t2 on t1.merchant_id = t2.merchant_id
+		left join sz_merchant t3 on t1.merchant_id=t3.id
+		where
+			t1.create_time = t2.create_time
+
+		<if test="searchParams !=null ">
+			<if test="searchParams.corporate_name !=null and searchParams.corporate_name !=''">
+				and t3.corporate_name like CONCAT("%", #{searchParams.corporate_name,jdbcType=VARCHAR}, "%")
+			</if>
+		</if>
+		
+	</select>
+	 -->
+	 <select id="selectIndexList" resultMap="szMerchantScore">
+			SELECT
+				sum(a.changes) score,
+				max(a.create_time) create_time,
+				a.merchant_id,
+				b.corporate_name
+			FROM
+				sz_merchant_score a
+			LEFT JOIN sz_merchant b ON a.merchant_id = b.id
+			WHERE
+				a.del_flag = 0
+			AND b.DEL_FLAG = 0
+			AND b.EXAMINE_STATE = 1
+			AND b.MERCHANT_STATE = 1
+			<if test="searchParams !=null ">
+				<if test="searchParams.corporate_name !=null and searchParams.corporate_name !=''">
+					and b.corporate_name like CONCAT("%", #{searchParams.corporate_name,jdbcType=VARCHAR}, "%")
+				</if>
+			</if>
+			GROUP BY
+				merchant_id
+			ORDER BY
+				create_time DESC
+		    LIMIT #{page,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+	</select>
+	<!-- <select id="indexListCount" resultType="java.lang.Long" parameterType="com.mass.biz.smart.merchantScore.model.SzMerchantScore">
+		select
+			count(0)
+		from
+			(
+				select
+					max(create_time) create_time,
+					merchant_id
+				from
+					sz_merchant_score where del_flag=0
+				group by
+					merchant_id
+			) t1
+		left join sz_merchant_score t2 on t1.merchant_id = t2.merchant_id
+		left join sz_merchant t3 on t1.merchant_id=t3.id
+		where
+			t1.create_time = t2.create_time
+
+			<if test="corporate_name !=null and corporate_name !=''">
+				and t3.corporate_name like CONCAT("%", #{corporate_name,jdbcType=VARCHAR}, "%")
+			</if>
+
+	</select>
+	 -->
+	 
+	 <select id="indexListCount" resultType="java.lang.Long" parameterType="com.mass.biz.smart.merchantScore.model.SzMerchantScore">
+			SELECT
+				count(DISTINCT(a.merchant_id)) count
+			FROM
+				sz_merchant_score a
+			LEFT JOIN sz_merchant b ON a.merchant_id = b.id
+			WHERE
+				a.del_flag = 0
+			AND b.DEL_FLAG = 0
+			AND b.EXAMINE_STATE = 1
+			AND b.MERCHANT_STATE = 1
+
+			<if test="corporate_name !=null and corporate_name !=''">
+				and b.corporate_name like CONCAT("%", #{corporate_name,jdbcType=VARCHAR}, "%")
+			</if>
+
+	</select>
+	
+	<!-- 指定商户积分详情 -->
+	<select id="selectPageList" resultMap="szMerchantScore">
+		select
+			b.corporate_name,a.score,a.changes,a.create_time,a.description
+		from
+			sz_merchant_score a
+		left join sz_merchant b on a.merchant_id = b.id
+		where
+			a.del_flag = 0
+			<if test="searchParams !=null ">
+				<if test="searchParams.merchant_id !=null and searchParams.merchant_id !=''">
+					and a.merchant_id = #{searchParams.merchant_id,jdbcType=BIGINT}
+				</if>
+				<if test="searchParams.description !=null and searchParams.description !=''">
+					and a.description like CONCAT("%", #{searchParams.description,jdbcType=VARCHAR}, "%")
+				</if>
+			</if>
+		order by a.create_time desc
+		LIMIT #{page,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+	</select>
+
+	<select id="count" resultType="java.lang.Long" parameterType="com.mass.biz.smart.merchantScore.model.SzMerchantScore">
+		select
+			count(0)
+		from
+			sz_merchant_score a
+		left join sz_merchant b on a.merchant_id = b.id
+		where
+			a.del_flag = 0
+			<if test="merchant_id !=null and merchant_id !=''">
+				and a.merchant_id = #{merchant_id,jdbcType=BIGINT}
+			</if>
+			<if test="description !=null and description !=''">
+				and a.description like CONCAT("%", #{description,jdbcType=VARCHAR}, "%")
+			</if>
+		order by a.create_time desc
+	</select>
+	
+	
+	<!-- 指定商户最新积分 -->
+	<!-- <select id="selectThelastScore" resultType="java.lang.Long" parameterType="com.mass.biz.smart.merchantScore.model.SzMerchantScore">
+		SELECT
+			score
+		FROM
+			sz_merchant_score
+		WHERE
+			create_time =(
+				SELECT
+					max(create_time) create_time
+				FROM
+					sz_merchant_score
+				WHERE
+					merchant_id = #{merchant_id,jdbcType=BIGINT}
+				AND del_flag = 0)
+	</select>
+	 -->
+	 <select id="selectThelastScore" resultType="java.lang.Long" parameterType="com.mass.biz.smart.merchantScore.model.SzMerchantScore">
+		SELECT
+			sum(changes) score
+		FROM
+			sz_merchant_score
+			WHERE
+				merchant_id = #{merchant_id,jdbcType=BIGINT}
+			AND del_flag = 0
+	</select>
+	
+	<insert id="insert" parameterType="com.mass.biz.smart.merchantScore.model.SzMerchantScore">
+		INSERT INTO sz_merchant_score (
+			merchant_id,
+			score,
+			changes,
+			description,
+			create_time,
+			user_id
+		)
+		VALUES
+		(
+			#{merchant_id,jdbcType=BIGINT},
+			#{score,jdbcType=BIGINT},
+			#{changes,jdbcType=BIGINT},
+			#{description,jdbcType=VARCHAR},
+			NOW(),
+			(
+				SELECT
+					DISTINCT(a.user_id)
+				FROM
+					sz_merchant a
+				LEFT JOIN  sz_merchant_score b ON b.merchant_id = a.ID
+				WHERE
+					a.id = #{merchant_id,jdbcType=BIGINT}
+			)
+	 	)
+	</insert>
+	
+	<insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+   
+	    INSERT INTO sz_merchant_score(
+            merchant_id,
+			score,
+			changes,
+			description,
+			create_time,
+			user_id
+		)
+     	VALUES 
+       <foreach collection="list" item="item" index="index" separator="," > 
+       		(
+            #{item.merchant_id,jdbcType=BIGINT},
+			#{item.score,jdbcType=BIGINT},
+			#{item.changes,jdbcType=BIGINT},
+			#{item.description,jdbcType=VARCHAR},
+			NOW(),
+			(
+				SELECT
+					DISTINCT(a.user_id)
+				FROM
+					sz_merchant a
+				LEFT JOIN  sz_merchant_score b ON b.merchant_id = a.ID
+				WHERE
+					a.id = #{item.merchant_id,jdbcType=BIGINT}
+			)
+	        )
+       </foreach> 
+	</insert>
+
+	<insert id="outsideInsert" parameterType="com.mass.biz.smart.merchantScore.model.SzMerchantScore">
+		INSERT INTO sz_merchant_score (
+			merchant_id,
+			score,
+			changes,
+			description,
+			create_time,
+			user_id
+		)
+		VALUES
+		(
+			(
+				SELECT
+					b.id MERCHANT_ID
+				FROM
+					sz_user a
+				LEFT JOIN sz_merchant b ON a.merchant_code = b.MERCHANT_CODE
+				WHERE
+					a.rid = #{user_id,jdbcType=BIGINT}
+			),
+			#{score,jdbcType=BIGINT},
+			#{changes,jdbcType=BIGINT},
+			#{description,jdbcType=VARCHAR},
+			NOW(),
+			#{user_id,jdbcType=BIGINT}
+	 	)
+	</insert>
+</mapper>

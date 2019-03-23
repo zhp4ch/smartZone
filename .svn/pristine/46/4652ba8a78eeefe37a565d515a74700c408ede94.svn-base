@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mass.biz.smart.services.Contract.dao.ContractMapper">
+
+    <resultMap id="Contract" type="com.mass.biz.smart.services.Contract.model.Contract">
+        <result column="ID" property="id" jdbcType="BIGINT"/>
+        <result column="CONTRACT_NAME" property="contractName" jdbcType="VARCHAR"/>
+        <result column="CONTRACT_TYPE" property="contractType" jdbcType="BIGINT"/>
+        <result column="CONTRACT_URL" property="contractUrl" jdbcType="VARCHAR"/>
+        <result column="CONTRACT_URL_NAME" property="contractUrlName" jdbcType="VARCHAR"/>
+        <result column="EXPIRY_TIME" property="expiryTime" jdbcType="VARCHAR"/>
+        <result column="CONTRACT_STATE" property="contractState" jdbcType="BIGINT"/>
+        <result column="COMPANY_ID" property="companyId" jdbcType="BIGINT"/>
+        <result column="CORPORATE_NAME" property="companyName" jdbcType="VARCHAR"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="DEL_FLAG" property="delFlag" jdbcType="BIGINT"/>
+
+        <result column="CORPORATE_NAME" property="corporateName" jdbcType="VARCHAR"/>
+        <result column="ABBREVIATION" property="abbreviation" jdbcType="VARCHAR"/>
+        <result column="REPRESENTATIVE_NAME" property="representativeName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--合同管理表-->
+    <sql id="baseSql">
+        T1.ID,T1.CONTRACT_NAME,T1.CONTRACT_TYPE,T1.CONTRACT_URL,T1.CONTRACT_URL_NAME,
+        T1.EXPIRY_TIME,T1.CONTRACT_STATE,
+        T1.COMPANY_ID,T1.CREATE_TIME,T1.DEL_FLAG
+    </sql>
+
+    <!--后台管理端-->
+
+    <!-- 分页查询及总数、多条件查询 -->
+    <select id="selectPageList" resultMap="Contract">
+        SELECT
+        <include refid="baseSql"/>,
+        T2.CORPORATE_NAME
+        FROM
+        sz_contract T1
+        LEFT JOIN sz_merchant T2
+        ON T1.COMPANY_ID = T2.ID
+        WHERE
+        T1.DEL_FLAG = 0
+        <if test="searchParams !=null ">
+
+            <if test="searchParams.contractName !=null and searchParams.contractName !=''">
+                AND T1.CONTRACT_NAME LIKE CONCAT("%", #{searchParams.contractName, jdbcType=VARCHAR}, "%")
+            </if>
+
+            <if test="searchParams.companyName !=null and searchParams.companyName !=''">
+                AND T1.COMPANY_NAME LIKE CONCAT("%", #{searchParams.companyName, jdbcType=VARCHAR}, "%")
+            </if>
+
+            <if test="searchParams.contractState !=null and searchParams.contractState !='' ">
+                AND T1.CONTRACT_STATE = #{searchParams.contractState, jdbcType=VARCHAR}
+            </if>
+
+        </if>
+        ORDER BY T1.CREATE_TIME DESC
+        LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+    </select>
+
+    <!--统计总条数-->
+    <select id="count" resultType="java.lang.Long"
+            parameterType="com.mass.biz.smart.services.Contract.model.Contract">
+        SELECT
+        COUNT(0)
+        FROM
+        sz_contract T1
+        WHERE
+        T1.DEL_FLAG=0
+
+        <if test="contractName !=null and contractName !=''">
+            AND T1.CONTRACT_NAME LIKE CONCAT
+            ("%", #{contractName, jdbcType=VARCHAR}, "%")
+        </if>
+
+        <if test="companyName !=null and companyName !=''">
+            AND T1.COMPANY_NAME LIKE CONCAT("%", #{companyName, jdbcType=VARCHAR}, "%")
+        </if>
+        <if test="contractState !=null and contractState !='' ">
+            AND T1.CONTRACT_STATE = #{contractState, jdbcType=VARCHAR}
+        </if>
+
+
+    </select>
+
+
+    <!--新增合同-->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.mass.biz.smart.services.Contract.model.Contract">
+        INSERT sz_contract
+        (
+            CONTRACT_NAME,
+            CONTRACT_TYPE,
+            CONTRACT_URL,
+            CONTRACT_URL_NAME,
+            EXPIRY_TIME,
+            CONTRACT_STATE,
+            COMPANY_ID,
+            CREATE_TIME,
+            DEL_FLAG
+        )
+        VALUES (
+            #{contractName,jdbcType=VARCHAR},
+            #{contractType,jdbcType=BIGINT},
+            #{contractUrl,jdbcType=VARCHAR},
+            #{contractUrlName,jdbcType=VARCHAR},
+            #{expiryTime,jdbcType=TIMESTAMP},
+            0,
+            #{companyId,jdbcType=BIGINT},
+            NOW(),
+            0
+        )
+    </insert>
+
+    <!--修改数据-->
+    <update id="update" parameterType="com.mass.biz.smart.services.Contract.model.Contract">
+        UPDATE sz_contract
+        <set>
+            <if test="contractName != null and contractName!='' ">CONTRACT_NAME=#{contractName,jdbcType=VARCHAR},</if>
+            <if test="contractType !=null ">CONTRACT_TYPE=#{contractType,jdbcType=BIGINT},</if>
+            <if test="expiryTime !=null and expiryTime !=''">EXPIRY_TIME=#{expiryTime,jdbcType=VARCHAR},</if>
+            <if test="contractUrl !=null and contractUrl !=''">CONTRACT_URL=#{contractUrl,jdbcType=VARCHAR},</if>
+            <if test="contractUrlName != null and contractUrlName!='' ">CONTRACT_URL_NAME=#{contractUrlName,jdbcType=VARCHAR},</if>
+            <if test="contractState !=null">CONTRACT_STATE=#{contractState,jdbcType=BIGINT},</if>
+        </set>
+        WHERE ID=#{id,jdbcType=BIGINT}
+    </update>
+
+
+    <!--删除数据-->
+    <update id="delete" parameterType="java.lang.Long">
+    UPDATE sz_contract
+    SET DEL_FLAG = 1
+    WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+
+
+    <!--微信端-->
+
+    <!--微信-根据公司id查询该用户租赁合同-->
+    <select id="getCompanyIdByZn" resultMap="Contract">
+        SELECT
+        <include refid="baseSql"/>,
+        T2.CORPORATE_NAME,T2.abbreviation,T2.REPRESENTATIVE_NAME
+        FROM
+        sz_contract T1
+        LEFT JOIN sz_merchant T2 ON T1.COMPANY_ID=T2.ID
+        WHERE
+        T1.DEL_FLAG = 0
+        AND
+        T1.CONTRACT_TYPE =0
+        AND
+        T1.COMPANY_ID = #{companyId,jdbcType=BIGINT}
+    </select>
+
+    <!--微信-根据公司id查询该用户所有其他类型合同-->
+    <select id="getCompanyIdByQt" resultMap="Contract">
+        SELECT
+        <include refid="baseSql"/>,
+        T2.CORPORATE_NAME,T2.ABBREVIATION,T2.REPRESENTATIVE_NAME
+        FROM
+        sz_contract T1
+        LEFT JOIN sz_merchant T2 ON T1.COMPANY_ID=T2.ID
+        WHERE
+        T1.DEL_FLAG = 0
+        AND
+        T1.CONTRACT_TYPE =1
+        AND
+        T1.COMPANY_ID = #{companyId,jdbcType=BIGINT}
+    </select>
+
+</mapper>

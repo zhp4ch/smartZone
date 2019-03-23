@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mass.biz.smart.sign.dao.SignRuleMapper">
+	<resultMap id="signRule" type="com.mass.biz.smart.sign.model.SignRule">
+		<result property="rid" column="rid" jdbcType="BIGINT" />
+		<result property="merchantId" column="merchant_id" jdbcType="BIGINT" />
+		<result property="onTime" column="on_time" jdbcType="VARCHAR" />
+		<result property="offTime" column="off_time" jdbcType="VARCHAR" />
+		<result property="state" column="state" jdbcType="TINYINT" />
+		<result property="remark" column="remark" jdbcType="VARCHAR" />
+		<result property="createTime" column="create_time" jdbcType="VARCHAR" />
+		<result property="updateTime" column="update_time" jdbcType="VARCHAR" />
+		<result property="corporateName" column="CORPORATE_NAME"
+			jdbcType="VARCHAR" />
+		<result property="examineState" column="EXAMINE_STATE"
+			jdbcType="TINYINT" />
+		<result property="idCode" column="id_code" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="baseSql">
+		T1.rid, T1.merchant_id, T1.on_time, T1.off_time,T1.state,
+		T1.remark, T1.create_time, T1.update_time
+	</sql>
+
+	<!-- 标题 关键字 发布时间范围查询 -->
+	<select id="selectPageList" resultMap="signRule">
+		select
+		<include refid="baseSql" />
+		,
+		b.CORPORATE_NAME
+		from sz_sign_rule T1
+		LEFT JOIN sz_merchant b ON
+		T1.merchant_id=b.ID
+		where
+		b.EXAMINE_STATE=1
+		and T1.state=0
+		<if test="searchParams !=null ">
+			<if test="searchParams.merchantId !=null ">
+				AND T1.merchant_id
+				=#{searchParams.merchantId,jdbcType=BIGINT}
+			</if>
+		</if>
+		LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+	</select>
+
+	<select id="count" resultType="java.lang.Long"
+		parameterType="com.mass.biz.smart.sign.model.SignRule">
+		SELECT COUNT(0)
+		from sz_sign_rule T1
+		LEFT JOIN sz_merchant b ON
+		T1.merchant_id=b.ID
+		where b.EXAMINE_STATE=1
+		and T1.state=0
+
+		<if test="merchantId !=null">
+			AND T1.merchant_id =#{merchantId,jdbcType=BIGINT}
+		</if>
+
+	</select>
+
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id"
+		parameterType="com.mass.biz.smart.sign.model.SignRule">
+		INSERT INTO sz_sign_rule(
+		merchant_id, on_time, off_time,
+		state,remark, create_time)
+		VALUES (
+		#{merchantId,jdbcType=BIGINT},
+		#{onTime,jdbcType=VARCHAR},
+		#{offTime,jdbcType=VARCHAR},
+		0,
+		#{remark,jdbcType=VARCHAR},
+		NOW())
+	</insert>
+
+	<update id="update" parameterType="com.mass.biz.smart.sign.model.SignRule">
+		UPDATE sz_sign_rule
+		<set>
+			<if test="merchantId !=null">merchant_id =#{merchantId,jdbcType=BIGINT},</if>
+			<if test="onTime !=null and onTime !=''">on_time =#{onTime,jdbcType=VARCHAR},</if>
+			<if test="offTime !=null and offTime !=''">off_time =#{offTime,jdbcType=VARCHAR},</if>
+			remark =#{remark,jdbcType=VARCHAR},
+			update_time=NOW()
+		</set>
+		WHERE rid=#{rid,jdbcType=BIGINT}
+	</update>
+
+	<update id="delete" parameterType="java.lang.Long">
+		UPDATE sz_sign_rule
+		SET state =
+		1
+		WHERE rid = #{rid,jdbcType=BIGINT}
+	</update>
+
+	<!--根据idCode查询 -->
+	<select id="getIdCode" resultMap="signRule">
+		SELECT
+		<include refid="baseSql" />
+		from sz_user a
+		LEFT JOIN sz_merchant b ON
+		a.merchant_id=b.ID
+		LEFT JOIN
+		sz_sign_rule T1 ON
+		b.ID=T1.merchant_id
+		where b.EXAMINE_STATE=1
+		and
+		T1.state=0
+		AND a.id_code = #{idCode,jdbcType=VARCHAR}
+	</select>
+
+	<!--根据商户id查询 -->
+	<select id="getMerchantId" resultMap="signRule">
+		SELECT
+		<include refid="baseSql" />
+		from sz_sign_rule T1
+		where T1.state=0 and
+		T1.merchant_id=#{merchantId,jdbcType=BIGINT}
+	</select>
+
+	<select id="getAllSignMerchant" resultMap="signRule">
+		SELECT
+		a.merchant_id,
+		b.CORPORATE_NAME
+		FROM
+		sz_sign_rule a
+		LEFT JOIN sz_merchant b ON a.merchant_id = b.ID
+	</select>
+
+</mapper>

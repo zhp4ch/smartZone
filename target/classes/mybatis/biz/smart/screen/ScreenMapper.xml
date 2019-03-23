@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mass.biz.smart.screen.dao.ScreenMapper">
+  <resultMap id="BaseResultMap" type="com.mass.biz.smart.screen.model.Screen">
+    <id column="ID" jdbcType="BIGINT" property="id" />
+    <result column="ENTER_NUM" jdbcType="INTEGER" property="enterNum" />
+    <result column="PARK_PICTURE" jdbcType="VARCHAR" property="parkPicture" />
+    <result column="PICTURE_EXPLAIN" jdbcType="VARCHAR" property="pictureExplain" />
+    <result column="LAST_YEAR" jdbcType="VARCHAR" property="lastYear" />
+    <result column="THIS_YEAR" jdbcType="VARCHAR" property="thisYear" />
+    <result column="PARK_NUM" jdbcType="VARCHAR" property="parkNum" />
+    <result column="NAME" jdbcType="VARCHAR" property="name" />
+    <result column="SCREEN_NAME" jdbcType="VARCHAR" property="screenName" />
+    <result column="JANUARY" jdbcType="INTEGER" property="january" />
+    <result column="FEBRUARY" jdbcType="INTEGER" property="february" />
+    <result column="MARCH" jdbcType="INTEGER" property="march" />
+    <result column="APRIL" jdbcType="INTEGER" property="april" />
+    <result column="MAY" jdbcType="INTEGER" property="may" />
+    <result column="JUNE" jdbcType="INTEGER" property="june" />
+    <result column="JULY" jdbcType="INTEGER" property="july" />
+    <result column="AUGUST" jdbcType="INTEGER" property="august" />
+    <result column="SEPTEMBER" jdbcType="INTEGER" property="september" />
+    <result column="OCTOBER" jdbcType="INTEGER" property="october" />
+    <result column="NOVEMBER" jdbcType="INTEGER" property="november" />
+    <result column="DECEMBER" jdbcType="INTEGER" property="december" />
+    <result column="DEL_FLAG" jdbcType="TINYINT" property="delFlag" />
+    <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="sale_num" jdbcType="INTEGER" property="saleNum" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    ID, ENTER_NUM, PARK_PICTURE, PICTURE_EXPLAIN, LAST_YEAR, THIS_YEAR, PARK_NUM, NAME, 
+    SCREEN_NAME, JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE, JULY, AUGUST, SEPTEMBER, 
+    OCTOBER, NOVEMBER, DECEMBER, DEL_FLAG, CREATE_TIME,sale_num
+  </sql>
+  <select id="selectByExample" parameterType="com.mass.biz.smart.screen.model.ScreenExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from sz_screen
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+    <if test="pageIndex != null and pageSize>=0">
+      limit #{pageIndex} , #{pageSize}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sz_screen
+    where ID = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from sz_screen
+    where ID = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.mass.biz.smart.screen.model.ScreenExample">
+    delete from sz_screen
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.mass.biz.smart.screen.model.Screen">
+    insert into sz_screen ( ENTER_NUM, PARK_PICTURE, 
+      PICTURE_EXPLAIN, LAST_YEAR, THIS_YEAR, 
+      PARK_NUM, NAME, SCREEN_NAME, 
+      JANUARY, FEBRUARY, MARCH, 
+      APRIL, MAY, JUNE, JULY, 
+      AUGUST, SEPTEMBER, OCTOBER, 
+      NOVEMBER, DECEMBER, DEL_FLAG, 
+      CREATE_TIME)
+    values (#{enterNum,jdbcType=INTEGER}, #{parkPicture,jdbcType=VARCHAR}, 
+      #{pictureExplain,jdbcType=VARCHAR}, #{lastYear,jdbcType=VARCHAR}, #{thisYear,jdbcType=VARCHAR}, 
+      #{parkNum,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{screenName,jdbcType=VARCHAR}, 
+      #{january,jdbcType=INTEGER}, #{february,jdbcType=INTEGER}, #{march,jdbcType=INTEGER}, 
+      #{april,jdbcType=INTEGER}, #{may,jdbcType=INTEGER}, #{june,jdbcType=INTEGER}, #{july,jdbcType=INTEGER}, 
+      #{august,jdbcType=INTEGER}, #{september,jdbcType=INTEGER}, #{october,jdbcType=INTEGER}, 
+      #{november,jdbcType=INTEGER}, #{december,jdbcType=INTEGER}, #{delFlag,jdbcType=TINYINT}, 
+      #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.mass.biz.smart.screen.model.Screen">
+    insert into sz_screen
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="enterNum != null">
+        ENTER_NUM,
+      </if>
+      <if test="parkPicture != null">
+        PARK_PICTURE,
+      </if>
+      <if test="pictureExplain != null">
+        PICTURE_EXPLAIN,
+      </if>
+      <if test="lastYear != null">
+        LAST_YEAR,
+      </if>
+      <if test="thisYear != null">
+        THIS_YEAR,
+      </if>
+      <if test="parkNum != null">
+        PARK_NUM,
+      </if>
+      <if test="name != null">
+        NAME,
+      </if>
+      <if test="screenName != null">
+        SCREEN_NAME,
+      </if>
+      <if test="january != null">
+        JANUARY,
+      </if>
+      <if test="february != null">
+        FEBRUARY,
+      </if>
+      <if test="march != null">
+        MARCH,
+      </if>
+      <if test="april != null">
+        APRIL,
+      </if>
+      <if test="may != null">
+        MAY,
+      </if>
+      <if test="june != null">
+        JUNE,
+      </if>
+      <if test="july != null">
+        JULY,
+      </if>
+      <if test="august != null">
+        AUGUST,
+      </if>
+      <if test="september != null">
+        SEPTEMBER,
+      </if>
+      <if test="october != null">
+        OCTOBER,
+      </if>
+      <if test="november != null">
+        NOVEMBER,
+      </if>
+      <if test="december != null">
+        DECEMBER,
+      </if>
+      <if test="delFlag != null">
+        DEL_FLAG,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="enterNum != null">
+        #{enterNum,jdbcType=INTEGER},
+      </if>
+      <if test="parkPicture != null">
+        #{parkPicture,jdbcType=VARCHAR},
+      </if>
+      <if test="pictureExplain != null">
+        #{pictureExplain,jdbcType=VARCHAR},
+      </if>
+      <if test="lastYear != null">
+        #{lastYear,jdbcType=VARCHAR},
+      </if>
+      <if test="thisYear != null">
+        #{thisYear,jdbcType=VARCHAR},
+      </if>
+      <if test="parkNum != null">
+        #{parkNum,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="screenName != null">
+        #{screenName,jdbcType=VARCHAR},
+      </if>
+      <if test="january != null">
+        #{january,jdbcType=INTEGER},
+      </if>
+      <if test="february != null">
+        #{february,jdbcType=INTEGER},
+      </if>
+      <if test="march != null">
+        #{march,jdbcType=INTEGER},
+      </if>
+      <if test="april != null">
+        #{april,jdbcType=INTEGER},
+      </if>
+      <if test="may != null">
+        #{may,jdbcType=INTEGER},
+      </if>
+      <if test="june != null">
+        #{june,jdbcType=INTEGER},
+      </if>
+      <if test="july != null">
+        #{july,jdbcType=INTEGER},
+      </if>
+      <if test="august != null">
+        #{august,jdbcType=INTEGER},
+      </if>
+      <if test="september != null">
+        #{september,jdbcType=INTEGER},
+      </if>
+      <if test="october != null">
+        #{october,jdbcType=INTEGER},
+      </if>
+      <if test="november != null">
+        #{november,jdbcType=INTEGER},
+      </if>
+      <if test="december != null">
+        #{december,jdbcType=INTEGER},
+      </if>
+      <if test="delFlag != null">
+        #{delFlag,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.mass.biz.smart.screen.model.ScreenExample" resultType="java.lang.Long">
+    select count(*) from sz_screen
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update sz_screen
+    <set>
+      <if test="record.id != null">
+        ID = #{record.id,jdbcType=BIGINT},
+      </if>
+      <if test="record.enterNum != null">
+        ENTER_NUM = #{record.enterNum,jdbcType=INTEGER},
+      </if>
+      <if test="record.saleNum != null">
+        sale_num = #{record.saleNum,jdbcType=INTEGER},
+      </if>
+      <if test="record.parkPicture != null">
+        PARK_PICTURE = #{record.parkPicture,jdbcType=VARCHAR},
+      </if>
+      <if test="record.pictureExplain != null">
+        PICTURE_EXPLAIN = #{record.pictureExplain,jdbcType=VARCHAR},
+      </if>
+      <if test="record.lastYear != null">
+        LAST_YEAR = #{record.lastYear,jdbcType=VARCHAR},
+      </if>
+      <if test="record.thisYear != null">
+        THIS_YEAR = #{record.thisYear,jdbcType=VARCHAR},
+      </if>
+      <if test="record.parkNum != null">
+        PARK_NUM = #{record.parkNum,jdbcType=VARCHAR},
+      </if>
+      <if test="record.name != null">
+        NAME = #{record.name,jdbcType=VARCHAR},
+      </if>
+      <if test="record.screenName != null">
+        SCREEN_NAME = #{record.screenName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.january != null">
+        JANUARY = #{record.january,jdbcType=INTEGER},
+      </if>
+      <if test="record.february != null">
+        FEBRUARY = #{record.february,jdbcType=INTEGER},
+      </if>
+      <if test="record.march != null">
+        MARCH = #{record.march,jdbcType=INTEGER},
+      </if>
+      <if test="record.april != null">
+        APRIL = #{record.april,jdbcType=INTEGER},
+      </if>
+      <if test="record.may != null">
+        MAY = #{record.may,jdbcType=INTEGER},
+      </if>
+      <if test="record.june != null">
+        JUNE = #{record.june,jdbcType=INTEGER},
+      </if>
+      <if test="record.july != null">
+        JULY = #{record.july,jdbcType=INTEGER},
+      </if>
+      <if test="record.august != null">
+        AUGUST = #{record.august,jdbcType=INTEGER},
+      </if>
+      <if test="record.september != null">
+        SEPTEMBER = #{record.september,jdbcType=INTEGER},
+      </if>
+      <if test="record.october != null">
+        OCTOBER = #{record.october,jdbcType=INTEGER},
+      </if>
+      <if test="record.november != null">
+        NOVEMBER = #{record.november,jdbcType=INTEGER},
+      </if>
+      <if test="record.december != null">
+        DECEMBER = #{record.december,jdbcType=INTEGER},
+      </if>
+      <if test="record.delFlag != null">
+        DEL_FLAG = #{record.delFlag,jdbcType=TINYINT},
+      </if>
+      <if test="record.createTime != null">
+        CREATE_TIME = #{record.createTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update sz_screen
+    set ID = #{record.id,jdbcType=BIGINT},
+      ENTER_NUM = #{record.enterNum,jdbcType=INTEGER},
+      PARK_PICTURE = #{record.parkPicture,jdbcType=VARCHAR},
+      PICTURE_EXPLAIN = #{record.pictureExplain,jdbcType=VARCHAR},
+      LAST_YEAR = #{record.lastYear,jdbcType=VARCHAR},
+      THIS_YEAR = #{record.thisYear,jdbcType=VARCHAR},
+      PARK_NUM = #{record.parkNum,jdbcType=VARCHAR},
+      NAME = #{record.name,jdbcType=VARCHAR},
+      SCREEN_NAME = #{record.screenName,jdbcType=VARCHAR},
+      JANUARY = #{record.january,jdbcType=INTEGER},
+      FEBRUARY = #{record.february,jdbcType=INTEGER},
+      MARCH = #{record.march,jdbcType=INTEGER},
+      APRIL = #{record.april,jdbcType=INTEGER},
+      MAY = #{record.may,jdbcType=INTEGER},
+      JUNE = #{record.june,jdbcType=INTEGER},
+      JULY = #{record.july,jdbcType=INTEGER},
+      AUGUST = #{record.august,jdbcType=INTEGER},
+      SEPTEMBER = #{record.september,jdbcType=INTEGER},
+      OCTOBER = #{record.october,jdbcType=INTEGER},
+      NOVEMBER = #{record.november,jdbcType=INTEGER},
+      DECEMBER = #{record.december,jdbcType=INTEGER},
+      DEL_FLAG = #{record.delFlag,jdbcType=TINYINT},
+      CREATE_TIME = #{record.createTime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.mass.biz.smart.screen.model.Screen">
+    update sz_screen
+    <set>
+      <if test="enterNum != null">
+        ENTER_NUM = #{enterNum,jdbcType=INTEGER},
+      </if>
+      <if test="parkPicture != null">
+        PARK_PICTURE = #{parkPicture,jdbcType=VARCHAR},
+      </if>
+      <if test="pictureExplain != null">
+        PICTURE_EXPLAIN = #{pictureExplain,jdbcType=VARCHAR},
+      </if>
+      <if test="lastYear != null">
+        LAST_YEAR = #{lastYear,jdbcType=VARCHAR},
+      </if>
+      <if test="thisYear != null">
+        THIS_YEAR = #{thisYear,jdbcType=VARCHAR},
+      </if>
+      <if test="parkNum != null">
+        PARK_NUM = #{parkNum,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        NAME = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="screenName != null">
+        SCREEN_NAME = #{screenName,jdbcType=VARCHAR},
+      </if>
+      <if test="january != null">
+        JANUARY = #{january,jdbcType=INTEGER},
+      </if>
+      <if test="february != null">
+        FEBRUARY = #{february,jdbcType=INTEGER},
+      </if>
+      <if test="march != null">
+        MARCH = #{march,jdbcType=INTEGER},
+      </if>
+      <if test="april != null">
+        APRIL = #{april,jdbcType=INTEGER},
+      </if>
+      <if test="may != null">
+        MAY = #{may,jdbcType=INTEGER},
+      </if>
+      <if test="june != null">
+        JUNE = #{june,jdbcType=INTEGER},
+      </if>
+      <if test="july != null">
+        JULY = #{july,jdbcType=INTEGER},
+      </if>
+      <if test="august != null">
+        AUGUST = #{august,jdbcType=INTEGER},
+      </if>
+      <if test="september != null">
+        SEPTEMBER = #{september,jdbcType=INTEGER},
+      </if>
+      <if test="october != null">
+        OCTOBER = #{october,jdbcType=INTEGER},
+      </if>
+      <if test="november != null">
+        NOVEMBER = #{november,jdbcType=INTEGER},
+      </if>
+      <if test="december != null">
+        DECEMBER = #{december,jdbcType=INTEGER},
+      </if>
+      <if test="delFlag != null">
+        DEL_FLAG = #{delFlag,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="saleNum != null">
+        sale_num = #{saleNum,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.mass.biz.smart.screen.model.Screen">
+    update sz_screen
+    set ENTER_NUM = #{enterNum,jdbcType=INTEGER},
+      PARK_PICTURE = #{parkPicture,jdbcType=VARCHAR},
+      PICTURE_EXPLAIN = #{pictureExplain,jdbcType=VARCHAR},
+      LAST_YEAR = #{lastYear,jdbcType=VARCHAR},
+      THIS_YEAR = #{thisYear,jdbcType=VARCHAR},
+      PARK_NUM = #{parkNum,jdbcType=VARCHAR},
+      NAME = #{name,jdbcType=VARCHAR},
+      SCREEN_NAME = #{screenName,jdbcType=VARCHAR},
+      JANUARY = #{january,jdbcType=INTEGER},
+      FEBRUARY = #{february,jdbcType=INTEGER},
+      MARCH = #{march,jdbcType=INTEGER},
+      APRIL = #{april,jdbcType=INTEGER},
+      MAY = #{may,jdbcType=INTEGER},
+      JUNE = #{june,jdbcType=INTEGER},
+      JULY = #{july,jdbcType=INTEGER},
+      AUGUST = #{august,jdbcType=INTEGER},
+      SEPTEMBER = #{september,jdbcType=INTEGER},
+      OCTOBER = #{october,jdbcType=INTEGER},
+      NOVEMBER = #{november,jdbcType=INTEGER},
+      DECEMBER = #{december,jdbcType=INTEGER},
+      DEL_FLAG = #{delFlag,jdbcType=TINYINT},
+      CREATE_TIME = #{createTime,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=BIGINT}
+  </update>
+  
+  <!-- 动态修改销售数据 -->
+  <update id="updateTimer" parameterType="com.mass.biz.smart.screen.model.Screen">
+    update sz_screen a set a.sale_num = a.sale_num + FLOOR((RAND() * 200)) where a.PARK_NUM = 'A'
+  </update>
+  
+  <!-- 初始化销售数据为32w多 -->
+  <update id="initSaleNum" parameterType="com.mass.biz.smart.screen.model.Screen">
+    update sz_screen a set a.sale_num = 320000 + FLOOR((RAND() * 10000)) where a.PARK_NUM = 'A'
+  </update>
+</mapper>

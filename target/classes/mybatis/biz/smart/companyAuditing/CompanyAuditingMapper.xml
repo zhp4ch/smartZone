@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mass.biz.smart.companyAuditing.dao.SzCompanyAuditingMapper">
+	<resultMap id="companyAuditing" type="com.mass.biz.smart.companyAuditing.model.SzCompanyAuditing">
+		<result property="rid" column="rid" jdbcType="BIGINT" />
+		<result property="company_code" column="company_code" jdbcType="BIGINT" />
+		<result property="auditing_id" column="auditing_id" jdbcType="TINYINT" />
+		<result property="auditing_state" column="auditing_state" jdbcType="TINYINT" />
+		<result property="auditing_remark" column="auditing_remark" jdbcType="VARCHAR" />
+		<result property="auditing_time" column="auditing_time" jdbcType="VARCHAR" />
+		<result property="create_time" column="create_time" jdbcType="VARCHAR" />
+		
+	</resultMap>
+	
+    <sql id="baseSql">
+		T1.rid,
+		T1.company_code,
+		T1.auditing_id,
+		T1.auditing_state,
+		T1.auditing_remark,
+		T1.auditing_time,
+		T1.create_time
+    </sql>
+    
+    <select id="selectList" resultMap="companyAuditing">
+    	SELECT 
+		<include refid="baseSql"/>,T2.NAME
+			from sz_company_auditing T1 left join sz_company t2 on t1.company_code = t2.company_code
+    		where t1.auditing_state=0
+    		LIMIT #{offset,jdbcType=BIGINT},#{limit,jdbcType=BIGINT}
+    </select>
+
+	<update id="update" parameterType="com.mass.biz.smart.companyAuditing.model.SzCompanyAuditing">
+        UPDATE SZ_COMPANY_AUDITING    
+        <set>
+            <if test="auditing_state !=null and auditing_state !=''">auditing_state=#{state,jdbcType=TINYINT},</if>
+            <if test="auditing_remark !=null and auditing_remark !=''">auditing_remark=#{auditing_remark,jdbcType=VARCHAR},</if>
+            auditing_time = now()     
+        </set>
+        WHERE rid=#{rid,jdbcType=VARCHAR}
+    </update>
+    
+   <insert  id="insert" useGeneratedKeys="true" keyProperty="rid" parameterType="com.mass.biz.smart.companyAuditing.model.SzCompanyAuditing">
+        INSERT INTO sz_join_merchant(
+			USER_ID,
+			MERCHANT_ID,
+			CREATE_TIME
+		)
+     	VALUES (
+	        #{user_id,jdbcType=BIGINT},
+	        #{merchant_id,jdbcType=BIGINT},
+	       	now()
+	        )
+   </insert>
+   
+   <select id="count" resultType="java.lang.Long" parameterType="com.mass.biz.smart.companyAuditing.model.SzCompanyAuditing">
+		SELECT count(0) FROM SZ_COMPANY_AUDITING T1
+		WHERE T1.AUDITING_STATE=0
+	</select>
+
+</mapper>
